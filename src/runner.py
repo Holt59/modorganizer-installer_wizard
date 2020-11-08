@@ -132,6 +132,8 @@ class MO2ManagerModInterface(ManagerModInterface):
             files = self._organizer.findFiles(path.parent.as_posix(), path.name)
             if files:
                 path = Path(files[0])
+            else:
+                path = None
 
         return path
 
