@@ -57,9 +57,17 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
     def settings(self):
         return [
             mobase.PluginSetting("enabled", "check to enable this plugin", True),
-            # TODO: I think this should be below FOMOD and above OMOD but this is
-            # currently not possible since OMOD has a priority of 500...
-            mobase.PluginSetting("priority", "priority of this installer", 80),
+            mobase.PluginSetting(
+                "prefer_fomod",
+                "prefer FOMOD installer over this one when possible",
+                True,
+            ),
+            mobase.PluginSetting(
+                "prefer_omod",
+                "prefer OMOD installer over this one when possible",
+                False,
+            ),
+            mobase.PluginSetting("priority", "priority of this installer", 1000),
         ]
 
     # Method for IPluginInstallerSimple:
@@ -81,6 +89,13 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
     ):
         # TODO: Save choices.
         pass
+
+    def _hasFomodInstaller(self) -> bool:
+        # Do not consider the NCC installer.
+        return bool(self._organizer.pluginSetting("Fomod Installer", "enabled"))
+
+    def _hasOmodInstaller(Self) -> bool:
+        return bool(self._organizer.pluginSetting("Omod Installer", "enabled"))
 
     def _getWizardArchiveBase(
         self, tree: mobase.IFileTree, data_name: str, checker: mobase.ModDataChecker
@@ -153,9 +168,31 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
             mobase.ModDataChecker  # type: ignore
         )
 
-        # Do the actual check - Convert to bool or do `is not None` to avoid
-        # issue with Python > C++ conversion:
-        return bool(self._getWizardArchiveBase(tree, data_name, checker))
+        # Retrieve the base:
+        base = self._getWizardArchiveBase(tree, data_name, checker)
+
+        if not base:
+            return False
+
+        # Check FOMOD:
+        fomod = base.exists("fomod/ModuleConfig.xml")
+        if (
+            fomod
+            and self._hasFomodInstaller()
+            and self._organizer.pluginSetting(self.name(), "prefer_fomod")
+        ):
+            return False
+
+        # Check OMOD:
+        omod = base.exists("omod")
+        if (
+            omod
+            and self._hasOmodInstaller()
+            and self._organizer.pluginSetting(self.name(), "prefer_omod")
+        ):
+            return False
+
+        return True
 
     def install(
         self,
