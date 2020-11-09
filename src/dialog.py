@@ -595,6 +595,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
 
             if context.context in self._pages:
                 page = self._pages[context.context]
+                page.update_context(context)
             else:
                 page = self._make_page(context)
 
