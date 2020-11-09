@@ -67,7 +67,8 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
                 "prefer OMOD installer over this one when possible",
                 False,
             ),
-            mobase.PluginSetting("priority", "priority of this installer", 1000),
+            # Above FOMOD:
+            mobase.PluginSetting("priority", "priority of this installer", 120),
         ]
 
     # Method for IPluginInstallerSimple:
@@ -94,7 +95,7 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         # Do not consider the NCC installer.
         return bool(self._organizer.pluginSetting("Fomod Installer", "enabled"))
 
-    def _hasOmodInstaller(Self) -> bool:
+    def _hasOmodInstaller(self) -> bool:
         return bool(self._organizer.pluginSetting("Omod Installer", "enabled"))
 
     def _getWizardArchiveBase(
@@ -183,14 +184,7 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         ):
             return False
 
-        # Check OMOD:
-        omod = base.exists("omod")
-        if (
-            omod
-            and self._hasOmodInstaller()
-            and self._organizer.pluginSetting(self.name(), "prefer_omod")
-        ):
-            return False
+        # TODO: Check OMOD?
 
         return True
 

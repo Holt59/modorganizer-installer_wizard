@@ -7,4 +7,4 @@ Get-ChildItem -Recurse -File -Include "*.ui" | ForEach-Object {
 }
 
 # Generate the .ts file:
-pylupdate5 (Get-ChildItem -Exclude lib  | Get-ChildItem -Recurse -File -Include "*.py") -ts installer_wizard_en.ts
+pylupdate5 (Get-ChildItem src -Exclude lib  | Get-ChildItem -Recurse -File -Include "*.py") -ts installer_wizard_en.ts

@@ -87,22 +87,22 @@
 <context>
     <name>WizardInstallerPage</name>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="91"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="133"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="92"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="134"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="93"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="135"/>
         <source>Options:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="94"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="136"/>
         <source>Description:</source>
         <translation type="unfinished"></translation>
     </message>
