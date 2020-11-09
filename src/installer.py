@@ -16,6 +16,7 @@ from wizard.runner import WizardRunnerState
 
 from .dialog import WizardInstallerDialog
 from .runner import make_interpreter
+from .utils import make_ini_tweaks, merge_ini_tweaks
 
 
 class WizardInstaller(mobase.IPluginInstallerSimple):
@@ -123,17 +124,17 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
 
         return None
 
-    def _getImageEntries(
+    def _getEntriesToExtract(
         self,
         tree: mobase.IFileTree,
-        extensions: List[str] = ["png", "jpg", "jpeg", "gif", "bmp"],
+        extensions: List[str] = ["png", "jpg", "jpeg", "gif", "bmp", "ini"],
     ) -> List[mobase.FileTreeEntry]:
         """
-        Retrieve all the entries corresponding to images in the given tree.
+        Retrieve all the entries to extract from the given tree.
 
         Args:
-            tree: The tree containing the images.
-            extensions: The extensions for images.
+            tree: The tree.
+            extensions: The extensions of files.
 
         Returns:
             A list of entries corresponding to files with the given extensions.
@@ -230,12 +231,11 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         if wizard is None:
             return mobase.InstallResult.NOT_ATTEMPTED
 
-        images = self._getImageEntries(otree)
+        to_extract = self._getEntriesToExtract(otree)
 
         # Extract the script:
-        # TODO: Extract pictures, similar to the FOMOD installer.
-        paths = self._manager().extractFiles([wizard] + images, silent=False)
-        if len(paths) != len(images) + 1:
+        paths = self._manager().extractFiles([wizard] + to_extract, silent=False)
+        if len(paths) != len(to_extract) + 1:
             return mobase.InstallResult.FAILED
 
         interpreter = make_interpreter(base, self._organizer)
@@ -247,7 +247,11 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
             interpreter,
             interpreter.make_top_level_context(Path(script), WizardRunnerState()),
             name,
-            {Path(entry.path()): Path(path) for entry, path in zip(images, paths[1:])},
+            {
+                Path(entry.path()): Path(path)
+                for entry, path in zip(to_extract, paths[1:])
+                if not path.endswith(".ini")
+            },
             self._parentWidget(),
         )
 
@@ -301,6 +305,44 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
                     continue
 
                 tree.move(entry, new)
+
+            # TODO: INI Tweaks:
+            alltweaks = dialog.tweaks()
+
+            for filename, tweaks in alltweaks.items():
+
+                print(tweaks)
+
+                # Find the original file (if any):
+                o_entry = tree.find(filename)
+                o_filename: Optional[str] = None
+                if o_entry:
+                    # Find the filepath from the list of extracted files:
+                    index = to_extract.index(o_entry)
+
+                    # +1 because the first one is the script.
+                    o_filename = paths[index + 1]
+
+                # If the file existed before, we keep the new one at the same
+                # place:
+                if o_entry or Path(filename).parts[0].lower() == "ini tweaks":
+                    entry = tree.addFile(filename, replace_if_exists=True)
+
+                # Otherwise we create it in INI Tweaks
+                else:
+                    entry = tree.addFile(
+                        os.path.join("INI Tweaks", filename), replace_if_exists=True
+                    )
+
+                filepath = self._manager().createFile(entry)
+
+                if not o_filename:
+                    data = make_ini_tweaks(tweaks)
+                else:
+                    data = merge_ini_tweaks(tweaks, Path(o_filename))
+
+                with open(filepath, "w") as fp:
+                    fp.write(data)
 
             # Return the tree:
             return tree
