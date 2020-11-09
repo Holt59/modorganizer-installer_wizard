@@ -133,6 +133,10 @@ class WizardInstallerRequiresVersionPage(QtWidgets.QWidget):
 
 class WizardInstallerSelectPage(QtWidgets.QWidget):
 
+    # Signal emitted when an item is double-clicked, only for SelectOne
+    # context:
+    itemDoubleClicked = pyqtSignal()
+
     _context: WizardRunnerContext
     _images: Mapping[Path, Path]
 
@@ -181,6 +185,9 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
             ):
                 item.setSelected(True)
                 self.ui.optionList.setCurrentItem(item)
+
+        if isinstance(context, WizardSelectOneContext):
+            self.ui.optionList.doubleClicked.connect(self.itemDoubleClicked.emit)
 
     def update_context(self, context: WizardSelectContext):
 
@@ -567,6 +574,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         page: QtWidgets.QWidget
         if isinstance(context, WizardSelectContext):
             page = WizardInstallerSelectPage(context, self._images, self)
+            page.itemDoubleClicked.connect(self.nextClicked)
             self._pages[context.context] = page  # type: ignore
         elif isinstance(context, WizardRequireVersionsContext):
             page = WizardInstallerRequiresVersionPage(context, self._organizer, self)
