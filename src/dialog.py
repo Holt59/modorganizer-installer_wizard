@@ -1,11 +1,11 @@
 # -*- encoding: utf-8 -*-
 
 from pathlib import Path
-from typing import Any, List, Mapping, Tuple, Union
+from typing import Any, List, Mapping, Tuple
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QKeySequence, QFontDatabase
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtWidgets
 
 import mobase
 
@@ -29,7 +29,7 @@ from wizard.errors import WizardError
 from wizard.interpreter import WizardInterpreter
 from wizard.manager import SelectOption
 from wizard.runner import WizardRunnerState, WizardRunnerKeywordVisitor
-from wizard.tweaks import WizardINISetting, WizardINISettingEdit
+from wizard.tweaks import WizardINISetting
 
 from .utils import make_ini_tweaks
 
