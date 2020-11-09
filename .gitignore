@@ -10,3 +10,5 @@ src/ui/*.py
 
 # Generated files:
 src/lib
+installer_wizard
+installer_wizard-*.zip

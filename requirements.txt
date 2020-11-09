@@ -1,0 +1,7 @@
+black
+PyQt5
+mypy
+flake8
+flake8-black
+mobase-stubs
+git+https://github.com/Holt59/bain-wizard-interpreter
