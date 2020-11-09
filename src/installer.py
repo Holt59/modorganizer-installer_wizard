@@ -220,7 +220,7 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
             self._parentWidget(),
         )
 
-        dialog.scriptButtonClicked.connect(lambda: os.startfile(script))
+        dialog.scriptButtonClicked.connect(lambda: os.startfile(script))  # type: ignore
 
         # Note: Unlike the official installer, we do not have a "silent" setting,
         # but it is really simple to add it.
