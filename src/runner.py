@@ -73,6 +73,21 @@ class MO2ManagerModInterface(ManagerModInterface):
                 if checker:
                     if checker.dataLooksValid(entry) == mobase.ModDataChecker.VALID:
                         self._subpackages.append(MO2SubPackage(entry))
+                        continue
+
+                # Add entry with INI tweaks:
+                if entry.exists("INI Tweaks") or entry.exists("INI"):
+                    self._subpackages.append(MO2SubPackage(entry))
+                    continue
+
+                # We add folder with format "XXX Docs" where "XXX" is a number.
+                parts = entry.name().split()
+                if (
+                    len(parts) >= 2
+                    and parts[0].isdigit()
+                    and parts[1].lower().startswith("doc")
+                ):
+                    self._subpackages.append(MO2SubPackage(entry))
 
     @property
     def subpackages(self) -> SubPackages:
