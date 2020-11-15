@@ -50,6 +50,8 @@ def make_standard_ini_tweaks(tweaks: List[WizardINISetting]) -> str:
 
 
 def merge_standard_ini_tweaks(tweaks: List[WizardINISetting], file: Path) -> str:
+    import sys
+
     print(f"Cannot merge INI Tweaks for {file.name}.", file=sys.stderr)
     return make_standard_ini_tweaks(tweaks)
 
