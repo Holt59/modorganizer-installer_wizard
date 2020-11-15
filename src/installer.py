@@ -311,8 +311,6 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
 
             for filename, tweaks in alltweaks.items():
 
-                print(tweaks)
-
                 # Find the original file (if any):
                 o_entry = tree.find(filename)
                 o_filename: Optional[str] = None

@@ -7,6 +7,16 @@ This plugin can be used to install BAIN archives containing a wizard script (`wi
 Go to the [releases page](https://github.com/Holt59/modorganizer-installer_wizard/releases) and download
 the latest release for your MO2 version.
 
+### A few words on INI Tweaks
+
+Mod Organizer 2 does not currently manage INI Tweaks, so the Wizard installer is partially functional
+regarding them.
+
+- The installer will create proper INI Tweaks when requested, but these will not be applied
+  to the game INI files automatically. If INI Tweaks are present, a pop-up should appear at
+  the end of the installation.
+- INI Tweaks for OBSE script are directly applied to the OBSE scripts.
+
 ## How to contribute?
 
 ### Setting-up the environment
