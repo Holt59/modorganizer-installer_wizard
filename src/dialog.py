@@ -226,7 +226,7 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
             target = self._images[Path(image)]
             self.ui.imageLabel.setPixmap(QPixmap(target.as_posix()))
         else:
-            self.ui.imageLabel.setText("")
+            self.ui.imageLabel.setPixmap(QPixmap())
 
     def selected(self) -> WizardSelectContext:
         if isinstance(self._context, WizardSelectOneContext):
