@@ -1,10 +1,12 @@
 # -*- encoding: utf-8 -*-
 
+import re
 import os
 import sys
 
+from collections import defaultdict
 from pathlib import Path
-from typing import Optional, List, Union
+from typing import Dict, Optional, List, Union
 
 # MO2 ships with PyQt5, so you can use it in your plugins:
 from PyQt5.QtWidgets import QApplication
@@ -28,7 +30,15 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
     it is valid (for this installer) and then modify it if required before extraction.
     """
 
+    # Regex used to parse settings:
+    RE_DESCRIPTION = re.compile(r"select([0-9]+)-description")
+    RE_OPTION = re.compile(r"select([0-9]+)-option([0-9]+)")
+
     _organizer: mobase.IOrganizer
+
+    # List of selected options:
+    _installerOptions: Dict[str, List[str]]
+    _installerUsed: bool
 
     def __init__(self):
         super().__init__()
@@ -83,14 +93,44 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
     def onInstallationStart(
         self, archive: str, reinstallation: bool, mod: Optional[mobase.IModInterface]
     ):
-        # TODO: Reload choices.
-        pass
+        self._installerUsed = False
+        self._installerOptions = {}
+
+        if mod:
+            settings = mod.pluginSettings(self.name())
+
+            # First extract the description:
+            descriptions: Dict[int, str] = {}
+            options: Dict[int, Dict[int, str]] = defaultdict(dict)
+            for setting, value in settings.items():
+                mdesc = WizardInstaller.RE_DESCRIPTION.match(setting)
+                if mdesc:
+                    select = int(mdesc.group(1))
+                    descriptions[select] = str(value)
+
+                mopt = WizardInstaller.RE_OPTION.match(setting)
+                if mopt:
+                    select = int(mopt.group(1))
+                    index = int(mopt.group(2))
+                    options[select][index] = str(value)
+
+            for kdesc, desc in descriptions.items():
+                self._installerOptions[desc] = []
+                if kdesc in options:
+                    for index in sorted(options[kdesc].keys()):
+                        self._installerOptions[desc].append(options[kdesc][index])
 
     def onInstallationEnd(
         self, result: mobase.InstallResult, mod: Optional[mobase.IModInterface]
     ):
-        # TODO: Save choices.
-        pass
+        if result != mobase.InstallResult.SUCCESS or not self._installerUsed or not mod:
+            return
+
+        mod.clearPluginSettings(self.name())
+        for i, desc in enumerate(self._installerOptions):
+            mod.setPluginSetting(self.name(), f"select{i}-description", desc)
+            for iopt, opt in enumerate(self._installerOptions[desc]):
+                mod.setPluginSetting(self.name(), f"select{i}-option{iopt}", opt)
 
     def _hasFomodInstaller(self) -> bool:
         # Do not consider the NCC installer.
@@ -252,6 +292,7 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
                 for entry, path in zip(to_extract, paths[1:])
                 if not path.endswith(".ini")
             },
+            self._installerOptions,
             self._parentWidget(),
         )
 
@@ -341,6 +382,10 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
 
                 with open(filepath, "w") as fp:
                     fp.write(data)
+
+            # Mark stuff for saving:
+            self._installerUsed = True
+            self._installerOptions = dict(dialog.selectedOptions())
 
             # Return the tree:
             return tree

@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from pathlib import Path
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QKeySequence, QFontDatabase
@@ -140,19 +140,21 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
     # context:
     itemDoubleClicked = pyqtSignal()
 
-    _context: WizardRunnerContext
+    _context: WizardSelectContext
     _images: Mapping[Path, Path]
 
     def __init__(
         self,
         context: WizardSelectContext,
         images: Mapping[Path, Path],
+        options: Optional[List[str]],
         parent: QtWidgets.QWidget,
     ):
         """
         Args:
             context: The context for this page.
             images: A mapping from path (in the archive) to extracted path.
+            options: Potential list of options to select. Might not exactly match.
             parent: The parent widget.
         """
         super().__init__(parent)
@@ -166,25 +168,36 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         self.ui.optionList.currentItemChanged.connect(self.onCurrentItemChanged)
 
         # Create list item widgets:
-        options = context.options
-        for option in options:
+        for option in context.options:
             item = QtWidgets.QListWidgetItem()
             self.ui.optionList.addItem(item)
 
         self.update_context(context)
 
+        # Extract previous select options:
+        previous_options = []
+        if options:
+            previous_options = [
+                option for option in context.options if option.name in options
+            ]
+        else:
+            if isinstance(context, WizardSelectManyContext):
+                previous_options = context.defaults
+            elif isinstance(context, WizardSelectOneContext):
+                previous_options = [context.default]
+
         # Set the default values:
-        for i, option in enumerate(options):
+        for i, option in enumerate(context.options):
             item = self.ui.optionList.item(i)
             if isinstance(context, WizardSelectManyContext):
                 item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # type: ignore
-                if option in context.defaults:
+                if option in previous_options:
                     item.setCheckState(Qt.Checked)
                 else:
                     item.setCheckState(Qt.Unchecked)
             elif (
                 isinstance(context, WizardSelectOneContext)
-                and option is context.default
+                and option in previous_options
             ):
                 item.setSelected(True)
                 self.ui.optionList.setCurrentItem(item)
@@ -199,10 +212,6 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         options = self._context.options
         assert len(options) == self.ui.optionList.count()
 
-        self.ui.selectDescriptionFrame.setStyleSheet(
-            # "QFrame { border: 1px solid red; }"
-            "QFrame { border-color: red; }"
-        )
         self.ui.selectDescriptionLabel.setText(context.description)
         self.ui.selectDescriptionLabel.setMargin(4)
 
@@ -228,18 +237,22 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         else:
             self.ui.imageLabel.setPixmap(QPixmap())
 
-    def selected(self) -> WizardSelectContext:
+    def selectedOptions(self) -> List[SelectOption]:
+        options = []
         if isinstance(self._context, WizardSelectOneContext):
-            return self._context.select(
-                self.ui.optionList.currentItem().data(Qt.UserRole)
-            )
-        elif isinstance(self._context, WizardSelectManyContext):
-            options = []
+            options.append(self.ui.optionList.currentItem().data(Qt.UserRole))
+        else:
             for i in range(self.ui.optionList.count()):
                 item = self.ui.optionList.item(i)
                 if item.checkState() == Qt.Checked:
                     options.append(item.data(Qt.UserRole))
-            return self._context.select(options)
+        return options
+
+    def selected(self) -> WizardSelectContext:
+        if isinstance(self._context, WizardSelectOneContext):
+            return self._context.select(self.selectedOptions()[0])
+        elif isinstance(self._context, WizardSelectManyContext):
+            return self._context.select(self.selectedOptions())
         else:
             return self._context  # type: ignore
 
@@ -271,28 +284,28 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         for sp in kvisitor.subpackages:
             item = QtWidgets.QListWidgetItem()
             item.setText(sp.name)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # type: ignore
             if sp.name in self.state.subpackages:
                 item.setCheckState(Qt.Checked)
-                plugins.extend(kvisitor.plugins_for(sp))
             else:
                 item.setCheckState(Qt.Unchecked)
+            item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)  # type: ignore
+            plugins.extend(kvisitor.plugins_for(sp))
             self.ui.subpackagesList.addItem(item)
 
         # Plugins:
         for plugin in sorted(plugins):
             item = QtWidgets.QListWidgetItem()
             item.setText(plugin)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # type: ignore
             if plugin in self.state.plugins:
                 item.setCheckState(Qt.Checked)
             else:
                 item.setCheckState(Qt.Unchecked)
+            item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)  # type: ignore
             self.ui.pluginsList.addItem(item)
 
         # INI Tweaks:
         self.ui.tweaksWidget.setVisible(bool(self.state.tweaks))
-        self.ui.tweaksList.currentItemChanged.connect(self.onCurrentItemChanged)
+        self.ui.tweaksList.currentItemChanged.connect(self.onCurrentTweakItemChanged)
         if self.state.tweaks:
             # Group the tweaks per file:
             tweaks = {
@@ -318,7 +331,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         self.ui.notesTextEdit.document().setIndentWidth(10)
         self.ui.notesTextEdit.setMarkdown(md)
 
-    def onCurrentItemChanged(
+    def onCurrentTweakItemChanged(
         self, current: QtWidgets.QListWidgetItem, previous: QtWidgets.QListWidgetItem
     ):
         # Clear text area and create the tweaks:
@@ -425,6 +438,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
     # The interpreter:
     _interpreter: WizardInterpreter
     _images: Mapping[Path, Path]
+    _options: Mapping[str, List[str]]
 
     # The Wizard MO2 interface:
     _start_context: WizardTopLevelContext
@@ -439,6 +453,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         context: WizardTopLevelContext[WizardRunnerState],
         name: mobase.GuessedString,
         images: Mapping[Path, Path],
+        options: Mapping[str, List[str]],
         parent: QtWidgets.QWidget,
     ):
         """
@@ -447,6 +462,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
             context: The initial context of the script.
             name: The name of the mod.
             images: A mapping from path (in the archive) to extracted path.
+            options: The previously selected options.
             parent: The parent widget.
         """
         super().__init__(parent)
@@ -454,6 +470,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self._organizer = organizer
         self._interpreter = interpreter
         self._images = images
+        self._options = options
         self._start_context = context
         self._pages = {}
 
@@ -536,6 +553,20 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         widget = self.ui.stackedWidget.currentWidget()
         assert isinstance(widget, WizardInstallerCompletePage)
         return widget.tweaks()
+
+    def selectedOptions(self) -> Mapping[str, List[str]]:
+        """
+        Returns:
+            The list of all currently selected options.
+        """
+        result = {}
+        for i in range(self.ui.stackedWidget.count()):
+            page = self.ui.stackedWidget.widget(i)
+            if isinstance(page, WizardInstallerSelectPage):
+                result[page._context.description] = [
+                    option.name for option in page.selectedOptions()
+                ]
+        return result
 
     def isManualRequested(self):
         return self._manual
@@ -622,7 +653,12 @@ class WizardInstallerDialog(QtWidgets.QDialog):
     def _make_page(self, context: WizardRunnerContext) -> QtWidgets.QWidget:
         page: QtWidgets.QWidget
         if isinstance(context, WizardSelectContext):
-            page = WizardInstallerSelectPage(context, self._images, self)
+            page = WizardInstallerSelectPage(
+                context,
+                self._images,
+                self._options.get(context.description, None),
+                self,
+            )
             page.itemDoubleClicked.connect(self.nextClicked)
             self._pages[context.context] = page  # type: ignore
         elif isinstance(context, WizardRequireVersionsContext):

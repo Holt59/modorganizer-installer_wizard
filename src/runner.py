@@ -144,7 +144,11 @@ class MO2ManagerModInterface(ManagerModInterface):
                 path = None
         else:
             path = Path(filepath)
-            files = self._organizer.findFiles(path.parent.as_posix(), path.name)
+            parent = path.parent.as_posix()
+            if parent == ".":
+                parent = ""
+
+            files = self._organizer.findFiles(parent, "*" + path.name)
             if files:
                 path = Path(files[0])
             else:
