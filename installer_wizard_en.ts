@@ -3,32 +3,32 @@
 <context>
     <name>WizardInstallerComplete</name>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="92"/>
+        <location filename="src/ui/wizardinstallercomplete.py" line="151"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="93"/>
+        <location filename="src/ui/wizardinstallercomplete.py" line="152"/>
         <source>The installer script has finished. The following sub-packages and plugins will be installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="94"/>
+        <location filename="src/ui/wizardinstallercomplete.py" line="153"/>
         <source>Sub-Packages:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="95"/>
+        <location filename="src/ui/wizardinstallercomplete.py" line="154"/>
         <source>Plugins:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="96"/>
+        <location filename="src/ui/wizardinstallercomplete.py" line="155"/>
         <source>INI Tweaks:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="97"/>
+        <location filename="src/ui/wizardinstallercomplete.py" line="156"/>
         <source>Notes:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -87,22 +87,22 @@
 <context>
     <name>WizardInstallerPage</name>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="133"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="91"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="134"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="92"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="135"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="93"/>
         <source>Options:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="136"/>
+        <location filename="src/ui/wizardinstallerpage.py" line="94"/>
         <source>Description:</source>
         <translation type="unfinished"></translation>
     </message>

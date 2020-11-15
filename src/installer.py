@@ -60,7 +60,7 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         return self._tr("Installer for BAIN archive containing wizard scripts.")
 
     def version(self):
-        return mobase.VersionInfo(1, 0, 0, mobase.ReleaseType.BETA)
+        return mobase.VersionInfo(1, 0, 1)
 
     def isActive(self):
         return self._organizer.pluginSetting(self.name(), "enabled")
