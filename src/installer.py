@@ -321,21 +321,6 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
 
                 tree.merge(entry)
 
-            # Move all non-selected plugins to "optional":
-            optionals: List[mobase.FileTreeEntry] = []
-            for entry in tree:
-                if entry.isFile() and (
-                    entry.hasSuffix(["esl", "esp", "esm"])
-                    and entry.name() not in dialog.plugins()
-                ):
-                    optionals.append(entry)
-
-            # Do not keep empty optional folder:
-            if optionals:
-                optional = tree.addDirectory("optional")
-                for entry in optionals:
-                    optional.insert(entry)
-
             # Handle renames:
             for original, new in dialog.renames().items():
                 # Entry should be at the root:
