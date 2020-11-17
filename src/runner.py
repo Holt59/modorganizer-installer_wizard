@@ -165,11 +165,11 @@ class MO2ManagerModInterface(ManagerModInterface):
     def getPluginStatus(self, filename) -> int:
         state = self._organizer.pluginList().state(filename)
 
-        if state & mobase.PluginState.MISSING:
-            return -1
-        if state & mobase.PluginState.INACTIVE:
+        if state == mobase.PluginState.ACTIVE:
+            return 2
+        if state == mobase.PluginState.INACTIVE:
             return 0  # Or 1?
-        return 2
+        return -1
 
     def getFilename(self, filepath: str) -> str:
         path = self._resolve(filepath)
