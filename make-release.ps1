@@ -6,7 +6,8 @@ $target = ".\installer_wizard\"
 
 Remove-Item -Recurse -Force -ErrorAction Ignore $target
 New-Item -Path $target -Type Directory | Out-Null
-Copy-Item -Recurse -Path .\src\* -Exclude "*.ui", "__pycache__" -Destination .\installer_wizard
+Copy-Item -Recurse -Path .\src\* -Exclude "*.ui" -Destination $target
+Get-ChildItem -Recurse $target -Include "__pycache__" | Remove-Item -Recurse -Force
 Copy-Item .\installer_wizard_en.ts, .\README.md, .\LICENSE $target
 
 # Find the version:
