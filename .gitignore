@@ -8,7 +8,12 @@ src/ui/*.py
 .tox
 .vscode
 
+# MO2 build files:
+vsbuild
+mob.log
+
 # Generated files:
+lib
 src/lib
 installer_wizard
 installer_wizard-*.zip
