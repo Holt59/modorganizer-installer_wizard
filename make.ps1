@@ -1,5 +1,5 @@
 # Install the lib:
-pip install --target=.\src\lib --upgrade git+https://github.com/Holt59/bain-wizard-interpreter | Out-Null
+pip install --target=.\src\lib --upgrade -r .\plugin-requirements.txt | Out-Null
 
 # Convert ui files:
 Get-ChildItem -Recurse -File -Include "*.ui" | ForEach-Object {

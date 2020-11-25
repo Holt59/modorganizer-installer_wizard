@@ -3,32 +3,32 @@
 <context>
     <name>WizardInstallerComplete</name>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="151"/>
+        <location filename="ui/wizardinstallercomplete.ui" line="14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="152"/>
+        <location filename="ui/wizardinstallercomplete.ui" line="40"/>
         <source>The installer script has finished. The following sub-packages and plugins will be installed.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="153"/>
+        <location filename="ui/wizardinstallercomplete.ui" line="111"/>
         <source>Sub-Packages:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="154"/>
+        <location filename="ui/wizardinstallercomplete.ui" line="128"/>
         <source>Plugins:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="155"/>
+        <location filename="ui/wizardinstallercomplete.ui" line="180"/>
         <source>INI Tweaks:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallercomplete.py" line="156"/>
+        <location filename="ui/wizardinstallercomplete.ui" line="236"/>
         <source>Notes:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -36,37 +36,37 @@
 <context>
     <name>WizardInstallerDialog</name>
     <message>
-        <location filename="src/ui/wizardinstallerdialog.py" line="75"/>
+        <location filename="ui/wizardinstallerdialog.ui" line="14"/>
         <source>BAIN Wizard Installer</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerdialog.py" line="76"/>
+        <location filename="ui/wizardinstallerdialog.ui" line="25"/>
         <source>Name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerdialog.py" line="77"/>
+        <location filename="ui/wizardinstallerdialog.ui" line="56"/>
         <source>Manual</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerdialog.py" line="78"/>
+        <location filename="ui/wizardinstallerdialog.ui" line="66"/>
         <source>Script</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerdialog.py" line="79"/>
+        <location filename="ui/wizardinstallerdialog.ui" line="92"/>
         <source>Back</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerdialog.py" line="80"/>
+        <location filename="ui/wizardinstallerdialog.ui" line="102"/>
         <source>Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerdialog.py" line="81"/>
+        <location filename="ui/wizardinstallerdialog.ui" line="109"/>
         <source>Cancel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -74,12 +74,12 @@
 <context>
     <name>WizardInstallerError</name>
     <message>
-        <location filename="src/ui/wizardinstallererror.py" line="52"/>
+        <location filename="ui/wizardinstallererror.ui" line="14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallererror.py" line="54"/>
+        <location filename="ui/wizardinstallererror.ui" line="71"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
@@ -87,22 +87,22 @@
 <context>
     <name>WizardInstallerPage</name>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="91"/>
+        <location filename="ui/wizardinstallerpage.ui" line="14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="92"/>
+        <location filename="ui/wizardinstallerpage.ui" line="96"/>
         <source>TextLabel</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="93"/>
+        <location filename="ui/wizardinstallerpage.ui" line="114"/>
         <source>Options:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerpage.py" line="94"/>
+        <location filename="ui/wizardinstallerpage.ui" line="148"/>
         <source>Description:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -110,52 +110,52 @@
 <context>
     <name>WizardInstallerRequires</name>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="113"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="14"/>
         <source>Form</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="114"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="34"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Warning:&lt;/span&gt; The following version requirements are not met for using this installer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="115"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="44"/>
         <source>Requirements</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="116"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="52"/>
         <source>Graphics Extender</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="117"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="76"/>
         <source>Wrye Bash</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="118"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="86"/>
         <source>Need</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="119"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="103"/>
         <source>Game</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="122"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="151"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="121"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="141"/>
         <source>Have</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="src/ui/wizardinstallerrequires.py" line="123"/>
+        <location filename="ui/wizardinstallerrequires.ui" line="165"/>
         <source>Script Extender</source>
         <translation type="unfinished"></translation>
     </message>
