@@ -134,10 +134,10 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
 
     def _hasFomodInstaller(self) -> bool:
         # Do not consider the NCC installer.
-        return bool(self._organizer.pluginSetting("Fomod Installer", "enabled"))
+        return self._organizer.isPluginEnabled("Fomod Installer")
 
     def _hasOmodInstaller(self) -> bool:
-        return bool(self._organizer.pluginSetting("Omod Installer", "enabled"))
+        return self._organizer.isPluginEnabled("Omod Installer")
 
     def _getWizardArchiveBase(
         self, tree: mobase.IFileTree, data_name: str, checker: mobase.ModDataChecker
