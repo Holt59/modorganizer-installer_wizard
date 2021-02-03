@@ -3,11 +3,6 @@
 <context>
     <name>WizardInstallerComplete</name>
     <message>
-        <location filename="ui/wizardinstallercomplete.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <location filename="ui/wizardinstallercomplete.ui" line="40"/>
         <source>The installer script has finished. The following sub-packages and plugins will be installed.</source>
         <translation type="unfinished"></translation>
@@ -72,30 +67,7 @@
     </message>
 </context>
 <context>
-    <name>WizardInstallerError</name>
-    <message>
-        <location filename="ui/wizardinstallererror.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/wizardinstallererror.ui" line="71"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>WizardInstallerPage</name>
-    <message>
-        <location filename="ui/wizardinstallerpage.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/wizardinstallerpage.ui" line="96"/>
-        <source>TextLabel</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="ui/wizardinstallerpage.ui" line="114"/>
         <source>Options:</source>
@@ -109,11 +81,6 @@
 </context>
 <context>
     <name>WizardInstallerRequires</name>
-    <message>
-        <location filename="ui/wizardinstallerrequires.ui" line="14"/>
-        <source>Form</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <location filename="ui/wizardinstallerrequires.ui" line="34"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Warning:&lt;/span&gt; The following version requirements are not met for using this installer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
