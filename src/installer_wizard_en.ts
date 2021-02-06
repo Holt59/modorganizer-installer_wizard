@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS><TS version="2.0">
 <context>
+    <name>WizardInstaller</name>
+    <message>
+        <location filename="installer.py" line="63"/>
+        <source>Installer for BAIN archive containing wizard scripts.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="installer.py" line="57"/>
+        <source>BAIN Wizard Installer</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>WizardInstallerComplete</name>
     <message>
         <location filename="ui/wizardinstallercomplete.ui" line="40"/>
@@ -31,6 +44,21 @@
 <context>
     <name>WizardInstallerDialog</name>
     <message>
+        <location filename="ui/wizardinstallerdialog.ui" line="102"/>
+        <source>Next</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="dialog.py" line="630"/>
+        <source>Install anyway</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="dialog.py" line="634"/>
+        <source>Install</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="ui/wizardinstallerdialog.ui" line="14"/>
         <source>BAIN Wizard Installer</source>
         <translation type="unfinished"></translation>
@@ -53,11 +81,6 @@
     <message>
         <location filename="ui/wizardinstallerdialog.ui" line="92"/>
         <source>Back</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="ui/wizardinstallerdialog.ui" line="102"/>
-        <source>Next</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

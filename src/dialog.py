@@ -5,6 +5,7 @@ from typing import Any, List, Mapping, Optional, Tuple
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QKeySequence, QFontDatabase
+from PyQt5.QtWidgets import QApplication
 from PyQt5 import QtWidgets
 
 import mobase
@@ -624,13 +625,13 @@ class WizardInstallerDialog(QtWidgets.QDialog):
 
         name: str = self.ui.nextBtn.text()
         if isinstance(widget, WizardInstallerSelectPage):
-            name = self._tr("Next")
+            name = self.__tr("Next")
         elif isinstance(widget, WizardInstallerRequiresVersionPage):
-            name = self._tr("Install anyway")
+            name = self.__tr("Install anyway")
         elif isinstance(widget, (WizardInstallerCancelPage, WizardInstallerErrorPage)):
             self.ui.nextBtn.setDisabled(True)
         else:
-            name = self._tr("Install")
+            name = self.__tr("Install")
 
         self.ui.nextBtn.setText(name)
 
@@ -683,5 +684,5 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self._update_focus()
         return super().exec()
 
-    def _tr(self, txt: str) -> str:
-        return QtWidgets.QApplication.translate("WizardInstaller", txt)
+    def __tr(self, str):
+        return QApplication.translate("WizardInstallerDialog", str)
