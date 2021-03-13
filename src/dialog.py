@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from pathlib import Path
-from typing import Any, List, Mapping, Optional, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QKeySequence, QFontDatabase
@@ -279,7 +279,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         kvisitor: WizardRunnerKeywordVisitor = context.factory.kvisitor  # type: ignore
 
         # The list of plugins in selected sub-packages:
-        plugins: List[str] = []
+        plugins: Set[str] = set()
 
         # SubPackages:
         for sp in kvisitor.subpackages:
@@ -290,8 +290,14 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
             else:
                 item.setCheckState(Qt.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)  # type: ignore
-            plugins.extend(kvisitor.plugins_for(sp))
+            plugins.update(kvisitor.plugins_for(sp))
             self.ui.subpackagesList.addItem(item)
+
+        # Switch the renamed plugins:
+        for plugin in list(plugins):
+            if plugin in self.state.renames:
+                plugins.remove(plugin)
+                plugins.add(self.state.renames[plugin])
 
         # Plugins:
         for plugin in sorted(plugins):
@@ -354,17 +360,16 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
                 sp.append(item.text())
         return sp
 
-    def plugins(self) -> List[str]:
+    def plugins(self) -> Dict[str, bool]:
         """
         Returns:
             The list of plugins selected in the UI (either automatically by the
             interpreter or by the user).
         """
-        sp: List[str] = []
+        sp: Dict[str, bool] = {}
         for i in range(self.ui.pluginsList.count()):
             item = self.ui.pluginsList.item(i)
-            if item.checkState() == Qt.Checked:
-                sp.append(item.text())
+            sp[item.text()] = item.checkState() == Qt.Checked
         return sp
 
     def tweaks(self) -> Mapping[str, List[WizardINISetting]]:
@@ -525,7 +530,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         assert isinstance(widget, WizardInstallerCompletePage)
         return widget.subpackages()
 
-    def plugins(self):
+    def plugins(self) -> Dict[str, bool]:
         """
         Returns:
             The list of plugins to install and enable. Only valid if exec() returned

@@ -49,12 +49,12 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="dialog.py" line="630"/>
+        <location filename="dialog.py" line="635"/>
         <source>Install anyway</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="dialog.py" line="634"/>
+        <location filename="dialog.py" line="639"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
