@@ -335,6 +335,14 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
 
                 tree.move(entry, new)
 
+            # Move not selected plugins to optional:
+            for plugin, enabled in dialog.plugins().items():
+                if not enabled:
+                    entry = tree.find(plugin)
+                    if not entry:
+                        continue  # silently fail since the plugin should be disabled
+                    tree.addDirectory("optional").insert(entry)
+
             # TODO: INI Tweaks:
             alltweaks = dialog.tweaks()
 
