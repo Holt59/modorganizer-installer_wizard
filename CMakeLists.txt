@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(installer_wizard LANGUAGES NONE)
+project(installer_wizard LANGUAGES CXX)
 set(project_type python_module_plugin)
 set(enable_warnings OFF)
 
