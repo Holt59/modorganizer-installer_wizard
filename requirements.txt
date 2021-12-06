@@ -1,5 +1,5 @@
 black
-PyQt5
+PyQt6
 mypy
 flake8
 flake8-black

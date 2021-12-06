@@ -8,9 +8,9 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, Optional, List, Union
 
-# MO2 ships with PyQt5, so you can use it in your plugins:
-from PyQt5.QtWidgets import QApplication
-from PyQt5 import QtWidgets
+# MO2 ships with PyQt6, so you can use it in your plugins:
+from PyQt6.QtWidgets import QApplication
+from PyQt6 import QtWidgets
 
 import mobase
 

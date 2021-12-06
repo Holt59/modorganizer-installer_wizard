@@ -3,10 +3,10 @@
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QKeySequence, QFontDatabase
-from PyQt5.QtWidgets import QApplication
-from PyQt5 import QtWidgets
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QPixmap, QKeySequence, QFontDatabase
+from PyQt6.QtWidgets import QApplication
+from PyQt6 import QtWidgets
 
 import mobase
 
@@ -495,7 +495,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self.ui.nameCombo.setCurrentIndex(self.ui.nameCombo.findText(str(name)))
 
         # We need to connect the Cancel / Manual buttons. We can of course use
-        # PyQt5 signal/slot syntax:
+        # PyQt6 signal/slot syntax:
         self.ui.cancelBtn.clicked.connect(self.reject)
 
         def manualClicked():
