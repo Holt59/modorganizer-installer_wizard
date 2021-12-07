@@ -630,13 +630,13 @@ class WizardInstallerDialog(QtWidgets.QDialog):
 
         name: str = self.ui.nextBtn.text()
         if isinstance(widget, WizardInstallerSelectPage):
-            name = self.__tr("Next")
+            name = self.tr("Next")
         elif isinstance(widget, WizardInstallerRequiresVersionPage):
-            name = self.__tr("Install anyway")
+            name = self.tr("Install anyway")
         elif isinstance(widget, (WizardInstallerCancelPage, WizardInstallerErrorPage)):
             self.ui.nextBtn.setDisabled(True)
         else:
-            name = self.__tr("Install")
+            name = self.tr("Install")
 
         self.ui.nextBtn.setText(name)
 
@@ -689,5 +689,5 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self._update_focus()
         return super().exec()
 
-    def __tr(self, str):
+    def tr(self, str):
         return QApplication.translate("WizardInstallerDialog", str)
