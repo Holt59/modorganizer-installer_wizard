@@ -191,7 +191,7 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         for i, option in enumerate(context.options):
             item = self.ui.optionList.item(i)
             if isinstance(context, WizardSelectManyContext):
-                item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # type: ignore
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)  # type: ignore
                 if option in previous_options:
                     item.setCheckState(Qt.CheckState.Checked)
                 else:
@@ -289,7 +289,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
                 item.setCheckState(Qt.CheckState.Checked)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
-            item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)  # type: ignore
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)  # type: ignore
             plugins.update(kvisitor.plugins_for(sp))
             self.ui.subpackagesList.addItem(item)
 
@@ -307,7 +307,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
                 item.setCheckState(Qt.CheckState.Checked)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
-            item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)  # type: ignore
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)  # type: ignore
             self.ui.pluginsList.addItem(item)
 
         # INI Tweaks:
