@@ -303,7 +303,7 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
 
         # Note: Unlike the official installer, we do not have a "silent" setting,
         # but it is really simple to add it.
-        if dialog.exec() == QtWidgets.QDialog.Accepted:
+        if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
 
             # We update the name with the user specified one:
             name.update(dialog.name(), mobase.GuessQuality.USER)

@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QKeySequence, QFontDatabase
+from PyQt6.QtGui import QPixmap, QKeySequence, QFontDatabase, QShortcut
 from PyQt6.QtWidgets import QApplication
 from PyQt6 import QtWidgets
 
@@ -104,13 +104,13 @@ class WizardInstallerRequiresVersionPage(QtWidgets.QWidget):
         game = organizer.managedGame()
 
         okIcon = QPixmap(":/MO/gui/checked-checkbox").scaled(
-            16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            16, 16, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
         )
         noIcon = QPixmap(":/MO/gui/unchecked-checkbox").scaled(
-            16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            16, 16, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
         )
         koIcon = QPixmap(":/MO/gui/indeterminate-checkbox").scaled(
-            16, 16, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            16, 16, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
         )
 
         self.ui.labelGame.setText(game.gameName())
@@ -193,9 +193,9 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
             if isinstance(context, WizardSelectManyContext):
                 item.setFlags(item.flags() | Qt.ItemIsUserCheckable)  # type: ignore
                 if option in previous_options:
-                    item.setCheckState(Qt.Checked)
+                    item.setCheckState(Qt.CheckState.Checked)
                 else:
-                    item.setCheckState(Qt.Unchecked)
+                    item.setCheckState(Qt.CheckState.Unchecked)
             elif (
                 isinstance(context, WizardSelectOneContext)
                 and option in previous_options
@@ -220,7 +220,7 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         for i, option in enumerate(options):
             item = self.ui.optionList.item(i)
             item.setText(option.name)
-            item.setData(Qt.UserRole, option)
+            item.setData(Qt.ItemDataRole.UserRole, option)
 
         # No item selected, select the first one:
         if not self.ui.optionList.currentItem():
@@ -229,7 +229,7 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
     def onCurrentItemChanged(
         self, current: QtWidgets.QListWidgetItem, previous: QtWidgets.QListWidgetItem
     ):
-        option: SelectOption = current.data(Qt.UserRole)
+        option: SelectOption = current.data(Qt.ItemDataRole.UserRole)
         self.ui.descriptionTextEdit.setText(option.description)
         image = option.image
         if image and Path(image) in self._images:
@@ -241,12 +241,12 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
     def selectedOptions(self) -> List[SelectOption]:
         options = []
         if isinstance(self._context, WizardSelectOneContext):
-            options.append(self.ui.optionList.currentItem().data(Qt.UserRole))
+            options.append(self.ui.optionList.currentItem().data(Qt.ItemDataRole.UserRole))
         else:
             for i in range(self.ui.optionList.count()):
                 item = self.ui.optionList.item(i)
-                if item.checkState() == Qt.Checked:
-                    options.append(item.data(Qt.UserRole))
+                if item.checkState() == Qt.CheckState.Checked:
+                    options.append(item.data(Qt.ItemDataRole.UserRole))
         return options
 
     def selected(self) -> WizardSelectContext:
@@ -286,9 +286,9 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
             item = QtWidgets.QListWidgetItem()
             item.setText(sp.name)
             if sp.name in self.state.subpackages:
-                item.setCheckState(Qt.Checked)
+                item.setCheckState(Qt.CheckState.Checked)
             else:
-                item.setCheckState(Qt.Unchecked)
+                item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)  # type: ignore
             plugins.update(kvisitor.plugins_for(sp))
             self.ui.subpackagesList.addItem(item)
@@ -304,9 +304,9 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
             item = QtWidgets.QListWidgetItem()
             item.setText(plugin)
             if plugin in self.state.plugins:
-                item.setCheckState(Qt.Checked)
+                item.setCheckState(Qt.CheckState.Checked)
             else:
-                item.setCheckState(Qt.Unchecked)
+                item.setCheckState(Qt.CheckState.Unchecked)
             item.setFlags(item.flags() & ~Qt.ItemIsUserCheckable)  # type: ignore
             self.ui.pluginsList.addItem(item)
 
@@ -323,11 +323,11 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
             for file, ftweaks in tweaks.items():
                 item = QtWidgets.QListWidgetItem()
                 item.setText(file.replace("\\", "/"))
-                item.setData(Qt.UserRole, ftweaks)
+                item.setData(Qt.ItemDataRole.UserRole, ftweaks)
                 self.ui.tweaksList.addItem(item)
 
             self.ui.tweaksTextEdit.setFont(
-                QFontDatabase.systemFont(QFontDatabase.FixedFont)
+                QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
             )
             self.ui.tweaksList.setCurrentRow(0)
 
@@ -344,7 +344,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         # Clear text area and create the tweaks:
         self.ui.tweaksTextEdit.clear()
         self.ui.tweaksTextEdit.appendPlainText(
-            make_ini_tweaks(current.data(Qt.UserRole))
+            make_ini_tweaks(current.data(Qt.ItemDataRole.UserRole))
         )
 
     def subpackages(self) -> List[str]:
@@ -356,7 +356,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         sp: List[str] = []
         for i in range(self.ui.subpackagesList.count()):
             item = self.ui.subpackagesList.item(i)
-            if item.checkState() == Qt.Checked:
+            if item.checkState() == Qt.CheckState.Checked:
                 sp.append(item.text())
         return sp
 
@@ -369,7 +369,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         sp: Dict[str, bool] = {}
         for i in range(self.ui.pluginsList.count()):
             item = self.ui.pluginsList.item(i)
-            sp[item.text()] = item.checkState() == Qt.Checked
+            sp[item.text()] = item.checkState() == Qt.CheckState.Checked
         return sp
 
     def tweaks(self) -> Mapping[str, List[WizardINISetting]]:
@@ -381,7 +381,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         rets = {}
         for i in range(self.ui.tweaksList.count()):
             item = self.ui.tweaksList.item(i)
-            rets[item.text()] = item.data(Qt.UserRole)
+            rets[item.text()] = item.data(Qt.ItemDataRole.UserRole)
         return rets
 
 
@@ -402,7 +402,7 @@ class WizardInstallerCancelPage(QtWidgets.QWidget):
         )
         self.ui.iconLabel.setPixmap(
             self.style()
-            .standardIcon(QtWidgets.QStyle.SP_MessageBoxWarning)
+            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning)
             .pixmap(24, 24)
         )
         self.ui.messageEdit.setText(context.message())
@@ -427,7 +427,7 @@ class WizardInstallerErrorPage(QtWidgets.QWidget):
         )
         self.ui.iconLabel.setPixmap(
             self.style()
-            .standardIcon(QtWidgets.QStyle.SP_MessageBoxCritical)
+            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxCritical)
             .pixmap(24, 24)
         )
         self.ui.messageEdit.setText(str(error))
@@ -484,14 +484,14 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self.ui = Ui_WizardInstallerDialog()
         self.ui.setupUi(self)
 
-        self.setWindowFlag(Qt.WindowContextHelpButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowContextHelpButtonHint, False)
 
         # mobase.GuessedString contains multiple names with various level of
         # "guess". Using .variants() returns the list of names, and doing str(name)
         # will return the most-likely value.
         for value in name.variants():
             self.ui.nameCombo.addItem(value)
-        self.ui.nameCombo.completer().setCaseSensitivity(Qt.CaseSensitive)
+        self.ui.nameCombo.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseSensitive)
         self.ui.nameCombo.setCurrentIndex(self.ui.nameCombo.findText(str(name)))
 
         # We need to connect the Cancel / Manual buttons. We can of course use
@@ -507,7 +507,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self.ui.prevBtn.clicked.connect(self.previousClicked)
         self.ui.nextBtn.clicked.connect(self.nextClicked)
 
-        QtWidgets.QShortcut(QKeySequence(Qt.Key_Backspace), self).activated.connect(
+        QShortcut(QKeySequence(Qt.Key.Key_Backspace), self).activated.connect(
             self.previousClicked
         )
 
@@ -618,7 +618,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
     def _update_focus(self):
         widget = self.ui.stackedWidget.currentWidget()
         if isinstance(widget, WizardInstallerSelectPage):
-            widget.ui.optionList.setFocus(True)
+            widget.ui.optionList.setFocus()
 
     def _update_prev_button(self):
         self.ui.prevBtn.setDisabled(self.ui.stackedWidget.currentIndex() <= 0)
