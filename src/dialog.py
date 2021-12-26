@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QKeySequence, QFontDatabase, QShortcut
+from PyQt6.QtGui import QPixmap, QKeySequence, QFontDatabase, QShortcut, QResizeEvent
 from PyQt6.QtWidgets import QApplication
 from PyQt6 import QtWidgets
 
@@ -143,6 +143,7 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
 
     _context: WizardSelectContext
     _images: Mapping[Path, Path]
+    _currentImage: QPixmap
 
     def __init__(
         self,
@@ -234,9 +235,21 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         image = option.image
         if image and Path(image) in self._images:
             target = self._images[Path(image)]
-            self.ui.imageLabel.setPixmap(QPixmap(target.as_posix()))
+            self._currentImage = QPixmap(target.as_posix())
+            self.ui.imageLabel.setPixmap(self.getResizedImage())
         else:
             self.ui.imageLabel.setPixmap(QPixmap())
+
+    def getResizedImage(self) -> QPixmap:
+        return self._currentImage.scaled(
+            self.ui.imageLabel.size(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation
+        )
+
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self.ui.imageLabel.setPixmap(self.getResizedImage())
 
     def selectedOptions(self) -> List[SelectOption]:
         options = []
@@ -485,6 +498,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self.ui.setupUi(self)
 
         self.setWindowFlag(Qt.WindowType.WindowContextHelpButtonHint, False)
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
 
         # mobase.GuessedString contains multiple names with various level of
         # "guess". Using .variants() returns the list of names, and doing str(name)
