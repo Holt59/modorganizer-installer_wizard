@@ -1,19 +1,17 @@
 # -*- encoding: utf-8 -*-
 
-import re
 import os
+import re
 import sys
-
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, Optional, List, Union
+from typing import Dict, List, Optional, Union
+
+import mobase
+from PyQt5 import QtWidgets
 
 # MO2 ships with PyQt5, so you can use it in your plugins:
 from PyQt5.QtWidgets import QApplication
-from PyQt5 import QtWidgets
-
-import mobase
-
 from wizard.runner import WizardRunnerState
 
 from .dialog import WizardInstallerDialog

@@ -3,12 +3,12 @@
 <context>
     <name>WizardInstaller</name>
     <message>
-        <location filename="installer.py" line="63"/>
+        <location filename="installer.py" line="61"/>
         <source>Installer for BAIN archive containing wizard scripts.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="installer.py" line="57"/>
+        <location filename="installer.py" line="55"/>
         <source>BAIN Wizard Installer</source>
         <translation type="unfinished"></translation>
     </message>
