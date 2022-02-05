@@ -1,7 +1,6 @@
 # -*- encoding: utf-8 -*-
 
 import re
-
 from pathlib import Path
 from typing import Dict, List, Mapping
 

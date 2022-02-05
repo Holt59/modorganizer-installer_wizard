@@ -3,35 +3,33 @@
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QPixmap, QKeySequence, QFontDatabase
-from PyQt5.QtWidgets import QApplication
-from PyQt5 import QtWidgets
-
 import mobase
-
-from .ui.wizardinstallerdialog import Ui_WizardInstallerDialog
-from .ui.wizardinstallerpage import Ui_WizardInstallerPage
-from .ui.wizardinstallerrequires import Ui_WizardInstallerRequires
-from .ui.wizardinstallercomplete import Ui_WizardInstallerComplete
-from .ui.wizardinstallererror import Ui_WizardInstallerError
-
 from antlr4 import ParserRuleContext
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QFontDatabase, QKeySequence, QPixmap
+from PyQt5.QtWidgets import QApplication
 from wizard.contexts import (
     WizardInterpreterContext,
-    WizardTopLevelContext,
-    WizardSelectContext,
-    WizardSelectOneContext,
-    WizardSelectManyContext,
     WizardRequireVersionsContext,
+    WizardSelectContext,
+    WizardSelectManyContext,
+    WizardSelectOneContext,
     WizardTerminationContext,
+    WizardTopLevelContext,
 )
 from wizard.errors import WizardError
 from wizard.interpreter import WizardInterpreter
 from wizard.manager import SelectOption
-from wizard.runner import WizardRunnerState, WizardRunnerKeywordVisitor
+from wizard.runner import WizardRunnerKeywordVisitor, WizardRunnerState
 from wizard.tweaks import WizardINISetting
+from wizard.value import Plugin
 
+from .ui.wizardinstallercomplete import Ui_WizardInstallerComplete
+from .ui.wizardinstallerdialog import Ui_WizardInstallerDialog
+from .ui.wizardinstallererror import Ui_WizardInstallerError
+from .ui.wizardinstallerpage import Ui_WizardInstallerPage
+from .ui.wizardinstallerrequires import Ui_WizardInstallerRequires
 from .utils import make_ini_tweaks
 
 WizardRunnerContext = WizardInterpreterContext[WizardRunnerState, Any]
@@ -279,7 +277,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         kvisitor: WizardRunnerKeywordVisitor = context.factory.kvisitor  # type: ignore
 
         # The list of plugins in selected sub-packages:
-        plugins: Set[str] = set()
+        plugins: Set[Plugin] = set()
 
         # SubPackages:
         for sp in kvisitor.subpackages:
@@ -297,12 +295,12 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
         for plugin in list(plugins):
             if plugin in self.state.renames:
                 plugins.remove(plugin)
-                plugins.add(self.state.renames[plugin])
+                plugins.add(Plugin(self.state.renames[plugin]))
 
         # Plugins:
         for plugin in sorted(plugins):
             item = QtWidgets.QListWidgetItem()
-            item.setText(plugin)
+            item.setText(plugin.name)
             if plugin in self.state.plugins:
                 item.setCheckState(Qt.Checked)
             else:
@@ -549,7 +547,9 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         """
         widget = self.ui.stackedWidget.currentWidget()
         assert isinstance(widget, WizardInstallerCompletePage)
-        return widget.state.renames
+        return {
+            plugin.name: new_name for plugin, new_name in widget.state.renames.items()
+        }
 
     def tweaks(self) -> Mapping[str, List[WizardINISetting]]:
         """
