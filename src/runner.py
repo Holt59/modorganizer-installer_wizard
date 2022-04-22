@@ -4,12 +4,13 @@ import sys
 from pathlib import Path
 from typing import Iterable, List, Optional
 
-import mobase
 from wizard.interpreter import WizardInterpreter
 from wizard.manager import ManagerModInterface
 from wizard.severity import SeverityContext
 from wizard.utils import make_runner_context_factory
 from wizard.value import SubPackage, SubPackages
+
+import mobase
 
 
 class MO2SubPackage(SubPackage):
