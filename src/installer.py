@@ -7,12 +7,13 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-import mobase
 from PyQt6 import QtWidgets
 
 # MO2 ships with PyQt6, so you can use it in your plugins:
 from PyQt6.QtWidgets import QApplication
 from wizard.runner import WizardRunnerState
+
+import mobase
 
 from .dialog import WizardInstallerDialog
 from .runner import make_interpreter

@@ -3,11 +3,10 @@
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 
-import mobase
 from antlr4 import ParserRuleContext
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPixmap, QKeySequence, QFontDatabase, QShortcut, QResizeEvent
+from PyQt6.QtGui import QFontDatabase, QKeySequence, QPixmap, QResizeEvent, QShortcut
 from PyQt6.QtWidgets import QApplication
 from wizard.contexts import (
     WizardInterpreterContext,
@@ -24,6 +23,8 @@ from wizard.manager import SelectOption
 from wizard.runner import WizardRunnerKeywordVisitor, WizardRunnerState
 from wizard.tweaks import WizardINISetting
 from wizard.value import Plugin
+
+import mobase
 
 from .ui.wizardinstallercomplete import Ui_WizardInstallerComplete
 from .ui.wizardinstallerdialog import Ui_WizardInstallerDialog
@@ -102,13 +103,22 @@ class WizardInstallerRequiresVersionPage(QtWidgets.QWidget):
         game = organizer.managedGame()
 
         okIcon = QPixmap(":/MO/gui/checked-checkbox").scaled(
-            16, 16, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            16,
+            16,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
         )
         noIcon = QPixmap(":/MO/gui/unchecked-checkbox").scaled(
-            16, 16, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            16,
+            16,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
         )
         koIcon = QPixmap(":/MO/gui/indeterminate-checkbox").scaled(
-            16, 16, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            16,
+            16,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
         )
 
         self.ui.labelGame.setText(game.gameName())
@@ -190,7 +200,7 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         for i, option in enumerate(context.options):
             item = self.ui.optionList.item(i)
             if isinstance(context, WizardSelectManyContext):
-                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)  # type: ignore
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                 if option in previous_options:
                     item.setCheckState(Qt.CheckState.Checked)
                 else:
@@ -234,15 +244,18 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
         if image and Path(image) in self._images:
             target = self._images[Path(image)]
             self._currentImage = QPixmap(target.as_posix())
-            self.ui.imageLabel.setPixmap(self.getResizedImage())
         else:
-            self.ui.imageLabel.setPixmap(QPixmap())
+            self._currentImage = QPixmap()
+
+        self.ui.imageLabel.setPixmap(self.getResizedImage())
 
     def getResizedImage(self) -> QPixmap:
+        if self._currentImage.isNull():
+            return self._currentImage
         return self._currentImage.scaled(
             self.ui.imageLabel.size(),
             Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation
+            Qt.TransformationMode.SmoothTransformation,
         )
 
     def resizeEvent(self, event: QResizeEvent) -> None:
@@ -252,7 +265,9 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
     def selectedOptions(self) -> List[SelectOption]:
         options = []
         if isinstance(self._context, WizardSelectOneContext):
-            options.append(self.ui.optionList.currentItem().data(Qt.ItemDataRole.UserRole))
+            options.append(
+                self.ui.optionList.currentItem().data(Qt.ItemDataRole.UserRole)
+            )
         else:
             for i in range(self.ui.optionList.count()):
                 item = self.ui.optionList.item(i)
@@ -300,7 +315,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
                 item.setCheckState(Qt.CheckState.Checked)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)  # type: ignore
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
             plugins.update(kvisitor.plugins_for(sp))
             self.ui.subpackagesList.addItem(item)
 
@@ -318,7 +333,7 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
                 item.setCheckState(Qt.CheckState.Checked)
             else:
                 item.setCheckState(Qt.CheckState.Unchecked)
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)  # type: ignore
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
             self.ui.pluginsList.addItem(item)
 
         # INI Tweaks:
@@ -503,7 +518,9 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         # will return the most-likely value.
         for value in name.variants():
             self.ui.nameCombo.addItem(value)
-        self.ui.nameCombo.completer().setCaseSensitivity(Qt.CaseSensitivity.CaseSensitive)
+        self.ui.nameCombo.completer().setCaseSensitivity(
+            Qt.CaseSensitivity.CaseSensitive
+        )
         self.ui.nameCombo.setCurrentIndex(self.ui.nameCombo.findText(str(name)))
 
         # We need to connect the Cancel / Manual buttons. We can of course use
@@ -519,9 +536,8 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self.ui.prevBtn.clicked.connect(self.previousClicked)
         self.ui.nextBtn.clicked.connect(self.nextClicked)
 
-        QShortcut(QKeySequence(Qt.Key.Key_Backspace), self).activated.connect(
-            self.previousClicked
-        )
+        backShortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace), self)
+        backShortcut.activated.connect(self.previousClicked)  # type: ignore
 
     @property
     def scriptButtonClicked(self) -> pyqtSignal:
