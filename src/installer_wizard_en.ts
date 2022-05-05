@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0">
+<TS version="2.1">
   <context>
     <name>WizardInstaller</name>
     <message>
-      <location filename="installer.py" line="55" />
+      <location filename="installer.py" line="56" />
       <source>BAIN Wizard Installer</source>
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="installer.py" line="61" />
+      <location filename="installer.py" line="62" />
       <source>Installer for BAIN archive containing wizard scripts.</source>
       <translation type="unfinished" />
     </message>
@@ -46,6 +46,22 @@
     <name>WizardInstallerDialog</name>
     <message>
       <location filename="ui\wizardinstallerdialog.ui" line="0" />
+      <location filename="dialog.py" line="663" />
+      <source>Next</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <location filename="dialog.py" line="665" />
+      <source>Install anyway</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <location filename="dialog.py" line="669" />
+      <source>Install</source>
+      <translation type="unfinished" />
+    </message>
+    <message>
+      <location filename="ui\wizardinstallerdialog.ui" line="0" />
       <source>BAIN Wizard Installer</source>
       <translation type="unfinished" />
     </message>
@@ -70,24 +86,8 @@
       <translation type="unfinished" />
     </message>
     <message>
-      <location filename="dialog.py" line="647" />
-      <location filename="ui\wizardinstallerdialog.ui" line="0" />
-      <source>Next</source>
-      <translation type="unfinished" />
-    </message>
-    <message>
       <location filename="ui\wizardinstallerdialog.ui" line="0" />
       <source>Cancel</source>
-      <translation type="unfinished" />
-    </message>
-    <message>
-      <location filename="dialog.py" line="649" />
-      <source>Install anyway</source>
-      <translation type="unfinished" />
-    </message>
-    <message>
-      <location filename="dialog.py" line="653" />
-      <source>Install</source>
       <translation type="unfinished" />
     </message>
   </context>
