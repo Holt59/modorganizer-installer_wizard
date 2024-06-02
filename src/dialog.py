@@ -1,13 +1,15 @@
-# -*- encoding: utf-8 -*-
+from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
+from typing import Any, cast
 
 from antlr4 import ParserRuleContext
 from PyQt6 import QtWidgets
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFontDatabase, QKeySequence, QPixmap, QResizeEvent, QShortcut
 from PyQt6.QtWidgets import QApplication
+
 from wizard.contexts import (
     WizardInterpreterContext,
     WizardRequireVersionsContext,
@@ -37,8 +39,9 @@ WizardRunnerContext = WizardInterpreterContext[WizardRunnerState, Any]
 
 
 def check_version(
-    context: WizardRequireVersionsContext, organizer: mobase.IOrganizer
-) -> Tuple[bool, bool, bool, bool]:
+    context: WizardRequireVersionsContext[WizardRunnerState],
+    organizer: mobase.IOrganizer,
+) -> tuple[bool, bool, bool, bool]:
     """
     Check if the requirements are ok.
 
@@ -58,10 +61,10 @@ def check_version(
     if context.game_version:
         game_ok = mobase.VersionInfo(context.game_version) <= game.version()
 
-    # Script extender:
+    # script extender
     se_ok = True
     if context.script_extender_version:
-        se = game.feature(mobase.ScriptExtender)  # type: ignore
+        se = organizer.gameFeatures().gameFeature(mobase.ScriptExtender)
         if not se or not se.isInstalled():
             se_ok = False
         else:
@@ -72,19 +75,18 @@ def check_version(
             else:
                 se_ok = False
 
-    # Cannot check these so...
+    # cannot check these so...
     ge_ok = not context.graphics_extender_version
 
     return (game_ok, se_ok, ge_ok, True)
 
 
 class WizardInstallerRequiresVersionPage(QtWidgets.QWidget):
-
-    context: WizardRequireVersionsContext
+    context: WizardRequireVersionsContext[WizardRunnerState]
 
     def __init__(
         self,
-        context: WizardRequireVersionsContext,
+        context: WizardRequireVersionsContext[WizardRunnerState],
         organizer: mobase.IOrganizer,
         parent: QtWidgets.QWidget,
     ):
@@ -92,9 +94,9 @@ class WizardInstallerRequiresVersionPage(QtWidgets.QWidget):
 
         self.context = context
 
-        # Set the ui file:
+        # set the ui file
         self.ui = Ui_WizardInstallerRequires()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self)  # pyright: ignore[reportUnknownMemberType]
 
         self.ui.groupBox.setStyleSheet(
             'QLabel[headercell="true"] { font-weight: bold; }'
@@ -123,20 +125,20 @@ class WizardInstallerRequiresVersionPage(QtWidgets.QWidget):
 
         self.ui.labelGame.setText(game.gameName())
 
-        # Set the required version:
+        # set the required version
         self.ui.labelGameNeed.setText(context.game_version)
         self.ui.labelScriptExtenderNeed.setText(context.script_extender_version)
         self.ui.labelGraphicsExtenderNeed.setText(context.graphics_extender_version)
         self.ui.labelWryeBashNeed.setText(context.wrye_bash_version)
 
-        # Set the current version:
+        # set the current version
         self.ui.labelGameHave.setText(game.version().canonicalString())
-        se = game.feature(mobase.ScriptExtender)  # type: ignore
-        if se or se.isInstalled():
+        se = organizer.gameFeatures().gameFeature(mobase.ScriptExtender)
+        if se and se.isInstalled():
             self.ui.labelScriptExtenderHave.setText(se.getExtenderVersion())
 
-        # Cannot check these so...
-        game_ok, se_ok, ge_ok, _ = check_version(context, organizer)
+        # cannot check these so...
+        game_ok, se_ok, _, _ = check_version(context, organizer)
         self.ui.labelGameIcon.setPixmap(okIcon if game_ok else koIcon)
         self.ui.labelScriptExtenderIcon.setPixmap(okIcon if se_ok else koIcon)
         self.ui.labelGraphicsExtenderIcon.setPixmap(noIcon)
@@ -144,20 +146,18 @@ class WizardInstallerRequiresVersionPage(QtWidgets.QWidget):
 
 
 class WizardInstallerSelectPage(QtWidgets.QWidget):
-
-    # Signal emitted when an item is double-clicked, only for SelectOne
-    # context:
+    # signal emitted when an item is double-clicked, only for SelectOne context
     itemDoubleClicked = pyqtSignal()
 
-    _context: WizardSelectContext
-    _images: Mapping[Path, Path]
+    context: WizardSelectContext[WizardRunnerState, Any]
+    _images: dict[Path, Path]
     _currentImage: QPixmap
 
     def __init__(
         self,
-        context: WizardSelectContext,
-        images: Mapping[Path, Path],
-        options: Optional[List[str]],
+        context: WizardSelectContext[WizardRunnerState, Any],
+        images: dict[Path, Path],
+        options: Sequence[str] | None,
         parent: QtWidgets.QWidget,
     ):
         """
@@ -171,20 +171,22 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
 
         self._images = images
 
-        # Set the ui file:
+        # set the ui file
         self.ui = Ui_WizardInstallerPage()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self)  # pyright: ignore[reportUnknownMemberType]
 
-        self.ui.optionList.currentItemChanged.connect(self.onCurrentItemChanged)
+        self.ui.optionList.currentItemChanged.connect(  # pyright: ignore[reportUnknownMemberType]
+            self.onCurrentItemChanged
+        )
 
-        # Create list item widgets:
-        for option in context.options:
+        # create list item widgets
+        for _ in context.options:
             item = QtWidgets.QListWidgetItem()
             self.ui.optionList.addItem(item)
 
         self.update_context(context)
 
-        # Extract previous select options:
+        # extract previous select options
         previous_options = []
         if options:
             previous_options = [
@@ -196,9 +198,10 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
             elif isinstance(context, WizardSelectOneContext):
                 previous_options = [context.default]
 
-        # Set the default values:
+        # set default values
         for i, option in enumerate(context.options):
             item = self.ui.optionList.item(i)
+            assert item is not None
             if isinstance(context, WizardSelectManyContext):
                 item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                 if option in previous_options:
@@ -213,25 +216,27 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
                 self.ui.optionList.setCurrentItem(item)
 
         if isinstance(context, WizardSelectOneContext):
-            self.ui.optionList.doubleClicked.connect(self.itemDoubleClicked.emit)
+            self.ui.optionList.doubleClicked.connect(  # pyright: ignore[reportUnknownMemberType]
+                self.itemDoubleClicked.emit
+            )
 
-    def update_context(self, context: WizardSelectContext):
+    def update_context(self, context: WizardSelectContext[WizardRunnerState, Any]):
+        self.context = context
 
-        self._context = context
-
-        options = self._context.options
+        options = self.context.options
         assert len(options) == self.ui.optionList.count()
 
         self.ui.selectDescriptionLabel.setText(context.description)
         self.ui.selectDescriptionLabel.setMargin(4)
 
-        # Update the content of the items:
+        # update the content of the items
         for i, option in enumerate(options):
             item = self.ui.optionList.item(i)
+            assert item is not None
             item.setText(option.name)
             item.setData(Qt.ItemDataRole.UserRole, option)
 
-        # No item selected, select the first one:
+        # no item selected, select the first one
         if not self.ui.optionList.currentItem():
             self.ui.optionList.setCurrentRow(0)
 
@@ -258,30 +263,31 @@ class WizardInstallerSelectPage(QtWidgets.QWidget):
             Qt.TransformationMode.SmoothTransformation,
         )
 
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        super().resizeEvent(event)
+    def resizeEvent(self, a0: QResizeEvent | None) -> None:
+        super().resizeEvent(a0)
         self.ui.imageLabel.setPixmap(self.getResizedImage())
 
-    def selectedOptions(self) -> List[SelectOption]:
-        options = []
-        if isinstance(self._context, WizardSelectOneContext):
-            options.append(
-                self.ui.optionList.currentItem().data(Qt.ItemDataRole.UserRole)
-            )
+    def selectedOptions(self) -> list[SelectOption]:
+        options: list[SelectOption] = []
+        if isinstance(self.context, WizardSelectOneContext):
+            item = self.ui.optionList.currentItem()
+            assert item is not None
+            options.append(item.data(Qt.ItemDataRole.UserRole))
         else:
             for i in range(self.ui.optionList.count()):
                 item = self.ui.optionList.item(i)
+                assert item is not None
                 if item.checkState() == Qt.CheckState.Checked:
                     options.append(item.data(Qt.ItemDataRole.UserRole))
         return options
 
-    def selected(self) -> WizardSelectContext:
-        if isinstance(self._context, WizardSelectOneContext):
-            return self._context.select(self.selectedOptions()[0])
-        elif isinstance(self._context, WizardSelectManyContext):
-            return self._context.select(self.selectedOptions())
+    def selected(self) -> WizardSelectContext[WizardRunnerState, Any]:
+        if isinstance(self.context, WizardSelectOneContext):
+            return self.context.select(self.selectedOptions()[0])
+        elif isinstance(self.context, WizardSelectManyContext):
+            return self.context.select(self.selectedOptions())
         else:
-            return self._context  # type: ignore
+            return self.context
 
 
 class WizardInstallerCompletePage(QtWidgets.QWidget):
@@ -292,22 +298,22 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
     ):
         super().__init__(parent)
 
-        # Set the ui file:
+        # set the ui file
         self.ui = Ui_WizardInstallerComplete()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self)  # pyright: ignore[reportUnknownMemberType]
 
         self.setStyleSheet('QLabel[heading="true"] { font-weight: bold; }')
 
         self.context = context
         self.state = context.state
 
-        # Retrieve the keyword visitor:
-        kvisitor: WizardRunnerKeywordVisitor = context.factory.kvisitor  # type: ignore
+        # retrieve the keyword visitor
+        kvisitor = cast(WizardRunnerKeywordVisitor, context.factory.kvisitor)
 
-        # The list of plugins in selected sub-packages:
-        plugins: Set[Plugin] = set()
+        # the list of plugins in selected sub-packages
+        plugins: set[Plugin] = set()
 
-        # SubPackages:
+        # sub-packages
         for sp in kvisitor.subpackages:
             item = QtWidgets.QListWidgetItem()
             item.setText(sp.name)
@@ -319,13 +325,13 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
             plugins.update(kvisitor.plugins_for(sp))
             self.ui.subpackagesList.addItem(item)
 
-        # Switch the renamed plugins:
+        # switch the renamed plugins
         for plugin in list(plugins):
             if plugin in self.state.renames:
                 plugins.remove(plugin)
                 plugins.add(Plugin(self.state.renames[plugin]))
 
-        # Plugins:
+        # lugins
         for plugin in sorted(plugins):
             item = QtWidgets.QListWidgetItem()
             item.setText(plugin.name)
@@ -336,11 +342,13 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
             item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
             self.ui.pluginsList.addItem(item)
 
-        # INI Tweaks:
+        # INI Tweaks
         self.ui.tweaksWidget.setVisible(bool(self.state.tweaks))
-        self.ui.tweaksList.currentItemChanged.connect(self.onCurrentTweakItemChanged)
+        self.ui.tweaksList.currentItemChanged.connect(  # pyright: ignore[reportUnknownMemberType]
+            self.onCurrentTweakItemChanged
+        )
         if self.state.tweaks:
-            # Group the tweaks per file:
+            # group the tweaks per file
             tweaks = {
                 file: self.state.tweaks.tweaks(file)
                 for file in self.state.tweaks.files()
@@ -357,56 +365,61 @@ class WizardInstallerCompletePage(QtWidgets.QWidget):
             )
             self.ui.tweaksList.setCurrentRow(0)
 
-        # Notes:
+        # notes
         md = ""
         for note in self.state.notes:
             md += f"- {note}\n"
-        self.ui.notesTextEdit.document().setIndentWidth(10)
+        document = self.ui.notesTextEdit.document()
+        assert document is not None
+        document.setIndentWidth(10)
         self.ui.notesTextEdit.setMarkdown(md)
 
     def onCurrentTweakItemChanged(
         self, current: QtWidgets.QListWidgetItem, previous: QtWidgets.QListWidgetItem
     ):
-        # Clear text area and create the tweaks:
+        # clear text area and create the tweaks
         self.ui.tweaksTextEdit.clear()
         self.ui.tweaksTextEdit.appendPlainText(
             make_ini_tweaks(current.data(Qt.ItemDataRole.UserRole))
         )
 
-    def subpackages(self) -> List[str]:
+    def subpackages(self) -> list[str]:
         """
         Returns:
             The list of subpackages selected in the UI (either automatically by the
             interpreter or by the user).
         """
-        sp: List[str] = []
+        sp: list[str] = []
         for i in range(self.ui.subpackagesList.count()):
             item = self.ui.subpackagesList.item(i)
+            assert item is not None
             if item.checkState() == Qt.CheckState.Checked:
                 sp.append(item.text())
         return sp
 
-    def plugins(self) -> Dict[str, bool]:
+    def plugins(self) -> dict[str, bool]:
         """
         Returns:
             The list of plugins selected in the UI (either automatically by the
             interpreter or by the user).
         """
-        sp: Dict[str, bool] = {}
+        sp: dict[str, bool] = {}
         for i in range(self.ui.pluginsList.count()):
             item = self.ui.pluginsList.item(i)
+            assert item is not None
             sp[item.text()] = item.checkState() == Qt.CheckState.Checked
         return sp
 
-    def tweaks(self) -> Mapping[str, List[WizardINISetting]]:
+    def tweaks(self) -> dict[str, list[WizardINISetting]]:
         """
         Returns:
             The list of tweaks created by the wizard. The returned value maps filenames
             to INI tweaks.
         """
-        rets = {}
+        rets: dict[str, list[WizardINISetting]] = {}
         for i in range(self.ui.tweaksList.count()):
             item = self.ui.tweaksList.item(i)
+            assert item is not None
             rets[item.text()] = item.data(Qt.ItemDataRole.UserRole)
         return rets
 
@@ -419,17 +432,19 @@ class WizardInstallerCancelPage(QtWidgets.QWidget):
     ):
         super().__init__(parent)
 
-        # Set the ui file (same UI file for both cancel and error):
+        # set the ui file (same UI file for both cancel and error)
         self.ui = Ui_WizardInstallerError()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self)  # pyright: ignore[reportUnknownMemberType]
 
         self.ui.titleLabel.setText(
             "The installation was cancelled by the installer with the following reason."
         )
+        style = self.style()
+        assert style is not None
         self.ui.iconLabel.setPixmap(
-            self.style()
-            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning)
-            .pixmap(24, 24)
+            style.standardIcon(
+                QtWidgets.QStyle.StandardPixmap.SP_MessageBoxWarning
+            ).pixmap(24, 24)
         )
         self.ui.messageEdit.setText(context.message())
 
@@ -442,50 +457,51 @@ class WizardInstallerErrorPage(QtWidgets.QWidget):
     ):
         super().__init__(parent)
 
-        # Set the ui file (same UI file for both cancel and error):
+        # set the ui file (same UI file for both cancel and error)
         self.ui = Ui_WizardInstallerError()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self)  # pyright: ignore[reportUnknownMemberType]
 
         self.ui.titleLabel.setText(
             "An error occurred during the installation of the script, "
             "this is probably due to an incorrect script file (wizard.txt) in the "
             "archive."
         )
+        style = self.style()
+        assert style is not None
         self.ui.iconLabel.setPixmap(
-            self.style()
-            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxCritical)
-            .pixmap(24, 24)
+            style.standardIcon(
+                QtWidgets.QStyle.StandardPixmap.SP_MessageBoxCritical
+            ).pixmap(24, 24)
         )
         self.ui.messageEdit.setText(str(error))
 
 
 class WizardInstallerDialog(QtWidgets.QDialog):
-
-    # Flag to indicate if the user chose to do a manual installation:
+    # flag to indicate if the user chose to do a manual installation
     _manual: bool = False
 
-    # The organizer:
+    # organizer
     _organizer: mobase.IOrganizer
 
-    # The interpreter:
-    _interpreter: WizardInterpreter
-    _images: Mapping[Path, Path]
-    _options: Mapping[str, List[str]]
+    # interpreter
+    _interpreter: WizardInterpreter[WizardRunnerState]
+    _images: dict[Path, Path]
+    _options: dict[str, list[str]]
 
-    # The Wizard MO2 interface:
-    _start_context: WizardTopLevelContext
+    # the Wizard MO2 interface
+    _start_context: WizardTopLevelContext[WizardRunnerState]
 
-    # Mapping from context to selected options:
-    _pages: Mapping[ParserRuleContext, WizardInstallerSelectPage]
+    # dict from context to selected options
+    _pages: dict[ParserRuleContext, WizardInstallerSelectPage]
 
     def __init__(
         self,
         organizer: mobase.IOrganizer,
-        interpreter: WizardInterpreter,
+        interpreter: WizardInterpreter[WizardRunnerState],
         context: WizardTopLevelContext[WizardRunnerState],
         name: mobase.GuessedString,
-        images: Mapping[Path, Path],
-        options: Mapping[str, List[str]],
+        images: dict[Path, Path],
+        options: dict[str, list[str]],
         parent: QtWidgets.QWidget,
     ):
         """
@@ -506,42 +522,52 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self._start_context = context
         self._pages = {}
 
-        # Set the ui file:
+        # set the ui file
         self.ui = Ui_WizardInstallerDialog()
-        self.ui.setupUi(self)
+        self.ui.setupUi(self)  # pyright: ignore[reportUnknownMemberType]
 
         self.setWindowFlag(Qt.WindowType.WindowContextHelpButtonHint, False)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, True)
 
         # mobase.GuessedString contains multiple names with various level of
-        # "guess". Using .variants() returns the list of names, and doing str(name)
-        # will return the most-likely value.
+        # "guess", using.variants() returns the list of names, and doing str(name)
+        # will return the most-likely value
         for value in name.variants():
             self.ui.nameCombo.addItem(value)
-        self.ui.nameCombo.completer().setCaseSensitivity(
-            Qt.CaseSensitivity.CaseSensitive
-        )
+        completer = self.ui.nameCombo.completer()
+        assert completer is not None
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseSensitive)
         self.ui.nameCombo.setCurrentIndex(self.ui.nameCombo.findText(str(name)))
 
-        # We need to connect the Cancel / Manual buttons. We can of course use
-        # PyQt6 signal/slot syntax:
-        self.ui.cancelBtn.clicked.connect(self.reject)
+        # we need to connect the Cancel / Manual buttons. We can of course use
+        # PyQt6 signal/slot syntax
+        self.ui.cancelBtn.clicked.connect(  # pyright: ignore[reportUnknownMemberType]
+            self.reject
+        )
 
         def manualClicked():
             self._manual = True
             self.reject()
 
-        self.ui.manualBtn.clicked.connect(manualClicked)
+        self.ui.manualBtn.clicked.connect(  # pyright: ignore[reportUnknownMemberType]
+            manualClicked
+        )
 
-        self.ui.prevBtn.clicked.connect(self.previousClicked)
-        self.ui.nextBtn.clicked.connect(self.nextClicked)
+        self.ui.prevBtn.clicked.connect(  # pyright: ignore[reportUnknownMemberType]
+            self.previousClicked
+        )
+        self.ui.nextBtn.clicked.connect(  # pyright: ignore[reportUnknownMemberType]
+            self.nextClicked
+        )
 
         backShortcut = QShortcut(QKeySequence(Qt.Key.Key_Backspace), self)
-        backShortcut.activated.connect(self.previousClicked)  # type: ignore
+        backShortcut.activated.connect(  # pyright: ignore[reportUnknownMemberType]
+            self.previousClicked
+        )
 
     @property
     def scriptButtonClicked(self) -> pyqtSignal:
-        return self.ui.scriptBtn.clicked  # type: ignore
+        return self.ui.scriptBtn.clicked  # pyright: ignore[reportReturnType]
 
     def name(self):
         return self.ui.nameCombo.currentText()
@@ -552,25 +578,23 @@ class WizardInstallerDialog(QtWidgets.QDialog):
             The list of subpackages to install. Only valid if exec() returned
             Accepted.
         """
-        # Note: We cannot fetch it from the state since the user can modify it in the
-        # UI.
+        # we cannot fetch it from the state since the user can modify it in the UI
         widget = self.ui.stackedWidget.currentWidget()
         assert isinstance(widget, WizardInstallerCompletePage)
         return widget.subpackages()
 
-    def plugins(self) -> Dict[str, bool]:
+    def plugins(self) -> dict[str, bool]:
         """
         Returns:
             The list of plugins to install and enable. Only valid if exec() returned
             Accepted.
         """
-        # Note: We cannot fetch it from the state since the user can modify it in the
-        # UI.
+        # we cannot fetch it from the state since the user can modify it in the UI
         widget = self.ui.stackedWidget.currentWidget()
         assert isinstance(widget, WizardInstallerCompletePage)
         return widget.plugins()
 
-    def renames(self) -> Mapping[str, str]:
+    def renames(self) -> dict[str, str]:
         """
         Returns:
             The mapping of renames for plugins. Only valid if exec() returned Accepted.
@@ -581,7 +605,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
             plugin.name: new_name for plugin, new_name in widget.state.renames.items()
         }
 
-    def tweaks(self) -> Mapping[str, List[WizardINISetting]]:
+    def tweaks(self) -> dict[str, list[WizardINISetting]]:
         """
         Returns:
             The list of tweaks per file. Only valid if exec() returned Accepted.
@@ -590,16 +614,16 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         assert isinstance(widget, WizardInstallerCompletePage)
         return widget.tweaks()
 
-    def selectedOptions(self) -> Mapping[str, List[str]]:
+    def selectedOptions(self) -> dict[str, list[str]]:
         """
         Returns:
             The list of all currently selected options.
         """
-        result = {}
+        result: dict[str, list[str]] = {}
         for i in range(self.ui.stackedWidget.count()):
             page = self.ui.stackedWidget.widget(i)
             if isinstance(page, WizardInstallerSelectPage):
-                result[page._context.description] = [
+                result[page.context.description] = [
                     option.name for option in page.selectedOptions()
                 ]
         return result
@@ -632,6 +656,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
 
             if context.context in self._pages:
                 page = self._pages[context.context]
+                assert isinstance(context, WizardSelectContext)
                 page.update_context(context)
             else:
                 page = self._make_page(context)
@@ -660,13 +685,13 @@ class WizardInstallerDialog(QtWidgets.QDialog):
 
         name: str = self.ui.nextBtn.text()
         if isinstance(widget, WizardInstallerSelectPage):
-            name = self.tr("Next")
+            name = self._tr("Next")
         elif isinstance(widget, WizardInstallerRequiresVersionPage):
-            name = self.tr("Install anyway")
+            name = self._tr("Install anyway")
         elif isinstance(widget, (WizardInstallerCancelPage, WizardInstallerErrorPage)):
             self.ui.nextBtn.setDisabled(True)
         else:
-            name = self.tr("Install")
+            name = self._tr("Install")
 
         self.ui.nextBtn.setText(name)
 
@@ -679,7 +704,7 @@ class WizardInstallerDialog(QtWidgets.QDialog):
             ),
         )
 
-        # If all requirements are ok, skip the context:
+        # if all requirements are ok, skip the context
         if isinstance(context, WizardRequireVersionsContext):
             if all(check_version(context, self._organizer)):
                 return self._exec_until(context.exec())
@@ -695,7 +720,9 @@ class WizardInstallerDialog(QtWidgets.QDialog):
                 self._options.get(context.description, None),
                 self,
             )
-            page.itemDoubleClicked.connect(self.nextClicked)
+            page.itemDoubleClicked.connect(  # pyright: ignore[reportUnknownMemberType]
+                self.nextClicked
+            )
             self._pages[context.context] = page  # type: ignore
         elif isinstance(context, WizardRequireVersionsContext):
             page = WizardInstallerRequiresVersionPage(context, self._organizer, self)
@@ -704,6 +731,8 @@ class WizardInstallerDialog(QtWidgets.QDialog):
                 page = WizardInstallerCancelPage(context, self)
             else:
                 page = WizardInstallerCompletePage(context, self)
+        else:
+            raise NotImplementedError()  # for typing purpose
 
         return page
 
@@ -719,5 +748,5 @@ class WizardInstallerDialog(QtWidgets.QDialog):
         self._update_focus()
         return super().exec()
 
-    def tr(self, str):
-        return QApplication.translate("WizardInstallerDialog", str)
+    def _tr(self, value: str):
+        return QApplication.translate("WizardInstallerDialog", value)

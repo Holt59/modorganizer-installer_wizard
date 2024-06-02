@@ -1,16 +1,15 @@
-# -*- encoding: utf-8 -*-
+from __future__ import annotations
 
 import os
 import re
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Sequence, Union, cast
 
 from PyQt6 import QtWidgets
-
-# MO2 ships with PyQt6, so you can use it in your plugins:
 from PyQt6.QtWidgets import QApplication
+
 from wizard.runner import WizardRunnerState
 
 import mobase
@@ -29,21 +28,18 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
     it is valid (for this installer) and then modify it if required before extraction.
     """
 
-    # Regex used to parse settings:
+    # regex used to parse settings
     RE_DESCRIPTION = re.compile(r"select([0-9]+)-description")
     RE_OPTION = re.compile(r"select([0-9]+)-option([0-9]+)")
 
     _organizer: mobase.IOrganizer
 
-    # List of selected options:
+    # list of selected options
     _installerOptions: Dict[str, List[str]]
     _installerUsed: bool
 
     def __init__(self):
         super().__init__()
-
-    # Method for IPlugin - I will not details these here since those are quite
-    # self-explanatory and are common to all plugins:
 
     def init(self, organizer: mobase.IOrganizer):
         self._organizer = organizer
@@ -53,13 +49,13 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         return "BAIN Wizard Installer"
 
     def localizedName(self) -> str:
-        return self.tr("BAIN Wizard Installer")
+        return self._tr("BAIN Wizard Installer")
 
     def author(self):
         return "Holt59"
 
     def description(self):
-        return self.tr("Installer for BAIN archive containing wizard scripts.")
+        return self._tr("Installer for BAIN archive containing wizard scripts.")
 
     def version(self):
         return mobase.VersionInfo(1, 0, 2)
@@ -80,28 +76,31 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
                 "prefer OMOD installer over this one when possible",
                 False,
             ),
-            # Above FOMOD:
+            # above FOMOD?
             mobase.PluginSetting("priority", "priority of this installer", 120),
         ]
 
-    # Method for IPluginInstallerSimple:
+    # method for IPluginInstallerSimple
 
-    def priority(self):
-        return self._organizer.pluginSetting(self.name(), "priority")
+    def priority(self) -> int:
+        return cast(int, self._organizer.pluginSetting(self.name(), "priority"))
 
     def isManualInstaller(self) -> bool:
         return False
 
     def onInstallationStart(
-        self, archive: str, reinstallation: bool, mod: Optional[mobase.IModInterface]
+        self,
+        archive: str,
+        reinstallation: bool,
+        current_mod: Optional[mobase.IModInterface],
     ):
         self._installerUsed = False
         self._installerOptions = {}
 
-        if mod:
-            settings = mod.pluginSettings(self.name())
+        if current_mod:
+            settings = current_mod.pluginSettings(self.name())
 
-            # First extract the description:
+            # first extract the description
             descriptions: Dict[int, str] = {}
             options: Dict[int, Dict[int, str]] = defaultdict(dict)
             for setting, value in settings.items():
@@ -123,19 +122,23 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
                         self._installerOptions[desc].append(options[kdesc][index])
 
     def onInstallationEnd(
-        self, result: mobase.InstallResult, mod: Optional[mobase.IModInterface]
+        self, result: mobase.InstallResult, new_mod: Optional[mobase.IModInterface]
     ):
-        if result != mobase.InstallResult.SUCCESS or not self._installerUsed or not mod:
+        if (
+            result != mobase.InstallResult.SUCCESS
+            or not self._installerUsed
+            or not new_mod
+        ):
             return
 
-        mod.clearPluginSettings(self.name())
+        new_mod.clearPluginSettings(self.name())
         for i, desc in enumerate(self._installerOptions):
-            mod.setPluginSetting(self.name(), f"select{i}-description", desc)
+            new_mod.setPluginSetting(self.name(), f"select{i}-description", desc)
             for iopt, opt in enumerate(self._installerOptions[desc]):
-                mod.setPluginSetting(self.name(), f"select{i}-option{iopt}", opt)
+                new_mod.setPluginSetting(self.name(), f"select{i}-option{iopt}", opt)
 
     def _hasFomodInstaller(self) -> bool:
-        # Do not consider the NCC installer.
+        # do not consider the NCC installer
         return self._organizer.isPluginEnabled("Fomod Installer")
 
     def _hasOmodInstaller(self) -> bool:
@@ -161,16 +164,16 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         if entry:
             return tree
 
-        if len(tree) == 1 and isinstance(tree[0], mobase.IFileTree):
-            return self._getWizardArchiveBase(tree[0], data_name, checker)
+        if len(tree) == 1 and isinstance((root := tree[0]), mobase.IFileTree):
+            return self._getWizardArchiveBase(root, data_name, checker)
 
         return None
 
     def _getEntriesToExtract(
         self,
         tree: mobase.IFileTree,
-        extensions: List[str] = ["png", "jpg", "jpeg", "gif", "bmp", "ini"],
-    ) -> List[mobase.FileTreeEntry]:
+        extensions: Sequence[str] = ["png", "jpg", "jpeg", "gif", "bmp", "ini"],
+    ) -> list[mobase.FileTreeEntry]:
         """
         Retrieve all the entries to extract from the given tree.
 
@@ -181,7 +184,7 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         Returns:
             A list of entries corresponding to files with the given extensions.
         """
-        entries = []
+        entries: list[mobase.FileTreeEntry] = []
 
         def fn(path: str, entry: mobase.FileTreeEntry):
             if entry.isFile() and entry.hasSuffix(extensions):
@@ -204,21 +207,19 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
             True if the file-tree can be installed, false otherwise.
         """
 
-        # Retrieve the name of the "data" folder:
+        # retrieve the name of the "data" folder
         data_name = self._organizer.managedGame().dataDirectory().dirName()
 
-        # Retrieve the mod-data-checker:
-        checker: mobase.ModDataChecker = self._organizer.managedGame().feature(
-            mobase.ModDataChecker  # type: ignore
-        )
+        # retrieve the mod-data-checker
+        checker = self._organizer.gameFeatures().gameFeature(mobase.ModDataChecker)
 
-        # Retrieve the base:
+        # retrieve the base
         base = self._getWizardArchiveBase(tree, data_name, checker)
 
         if not base:
             return False
 
-        # Check FOMOD:
+        # check FOMOD for priority
         fomod = base.exists("fomod/ModuleConfig.xml")
         if (
             fomod
@@ -234,9 +235,9 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
     def install(
         self,
         name: mobase.GuessedString,
-        otree: mobase.IFileTree,
+        tree: mobase.IFileTree,
         version: str,
-        modId: int,
+        nexus_id: int,
     ) -> Union[mobase.InstallResult, mobase.IFileTree]:
         """
         Perform the actual installation.
@@ -244,9 +245,9 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         Args:
             name: The "name" of the mod. This can be updated to change the name of the
                 mod.
-            otree: The original archive tree.
+            tree: The original archive tree.
             version: The original version of the mod.
-            modId: The original ID of the mod.
+            nexus_id: The original ID of the mod.
 
         Returns: We either return the modified file-tree (if the installation was
             successful), or a InstallResult otherwise.
@@ -256,16 +257,14 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
             of the mod, in case those were updated by the installer.
         """
 
-        # Retrieve the name of the "data" folder:
+        # retrieve the name of the "data" folder
         data_name = self._organizer.managedGame().dataDirectory().dirName()
 
-        # Retrieve the mod-data-checker:
-        checker: mobase.ModDataChecker = self._organizer.managedGame().feature(
-            mobase.ModDataChecker  # type: ignore
-        )
+        # retrieve the mod-data-checker
+        checker = self._organizer.gameFeatures().gameFeature(mobase.ModDataChecker)
 
-        # Retrive the "base" folder:
-        base = self._getWizardArchiveBase(otree, data_name, checker)
+        # retrieve the "base" folder
+        base = self._getWizardArchiveBase(tree, data_name, checker)
         if not base or not checker:
             return mobase.InstallResult.NOT_ATTEMPTED
 
@@ -273,9 +272,9 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
         if wizard is None:
             return mobase.InstallResult.NOT_ATTEMPTED
 
-        to_extract = self._getEntriesToExtract(otree)
+        to_extract = self._getEntriesToExtract(tree)
 
-        # Extract the script:
+        # extract the script
         paths = self._manager().extractFiles([wizard] + to_extract, silent=False)
         if len(paths) != len(to_extract) + 1:
             return mobase.InstallResult.FAILED
@@ -291,29 +290,30 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
             name,
             {
                 Path(entry.path()): Path(path)
-                for entry, path in zip(to_extract, paths[1:])
+                for entry, path in zip(to_extract, paths[1:], strict=True)
                 if not path.endswith(".ini")
             },
             self._installerOptions,
             self._parentWidget(),
         )
 
-        dialog.scriptButtonClicked.connect(lambda: os.startfile(script))  # type: ignore
+        dialog.scriptButtonClicked.connect(  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+            lambda: os.startfile(script)
+        )
 
-        # Note: Unlike the official installer, we do not have a "silent" setting,
-        # but it is really simple to add it.
+        # unlike the official installer, we do not have a "silent" setting, but it is
+        # really simple to add it
         if dialog.exec() == QtWidgets.QDialog.DialogCode.Accepted:
-
-            # We update the name with the user specified one:
+            # we update the name with the user specified one
             name.update(dialog.name(), mobase.GuessQuality.USER)
 
-            # Create the tree with all the sub-packages:
-            tree = otree.createOrphanTree()
+            # create the tree with all the sub-packages
+            new_tree = tree.createOrphanTree()
 
             for subpackage in dialog.subpackages():
                 entry = base.find(subpackage)
 
-                # Should never happens since we fetch the subpackage for the archive:
+                # should never happens since we fetch the subpackage for the archive
                 if not entry or not isinstance(entry, mobase.IFileTree):
                     print(
                         f"SubPackage {subpackage} not found in the archive.",
@@ -321,50 +321,48 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
                     )
                     continue
 
-                tree.merge(entry)
+                new_tree.merge(entry)
 
-            # Handle renames:
+            # handle renames
             for original, new in dialog.renames().items():
-                # Entry should be at the root:
-                entry = tree.find(original)
+                # entry should be at the root
+                entry = new_tree.find(original)
 
                 if not entry:
                     print(f"Plugin {original} not found, cannot rename.")
                     continue
 
-                tree.move(entry, new)
+                new_tree.move(entry, new)
 
-            # Move not selected plugins to optional:
+            # move not selected plugins to optional
             for plugin, enabled in dialog.plugins().items():
                 if not enabled:
-                    entry = tree.find(plugin)
+                    entry = new_tree.find(plugin)
                     if not entry:
                         continue  # silently fail since the plugin should be disabled
-                    tree.addDirectory("optional").insert(entry)
+                    new_tree.addDirectory("optional").insert(entry)
 
             # TODO: INI Tweaks:
             alltweaks = dialog.tweaks()
 
             for filename, tweaks in alltweaks.items():
-
-                # Find the original file (if any):
-                o_entry = tree.find(filename)
+                # find the original file (if any)
+                o_entry = new_tree.find(filename)
                 o_filename: Optional[str] = None
                 if o_entry:
-                    # Find the filepath from the list of extracted files:
+                    # find the filepath from the list of extracted files
                     index = to_extract.index(o_entry)
 
-                    # +1 because the first one is the script.
+                    # +1 because the first one is the script
                     o_filename = paths[index + 1]
 
-                # If the file existed before, we keep the new one at the same
-                # place:
+                # if the file existed before, we keep the new one at the same place
                 if o_entry or Path(filename).parts[0].lower() == "ini tweaks":
-                    entry = tree.addFile(filename, replace_if_exists=True)
+                    entry = new_tree.addFile(filename, replace_if_exists=True)
 
-                # Otherwise we create it in INI Tweaks
+                # otherwise we create it in INI Tweaks
                 else:
-                    entry = tree.addFile(
+                    entry = new_tree.addFile(
                         os.path.join("INI Tweaks", filename), replace_if_exists=True
                     )
 
@@ -378,24 +376,23 @@ class WizardInstaller(mobase.IPluginInstallerSimple):
                 with open(filepath, "w") as fp:
                     fp.write(data)
 
-            # Mark stuff for saving:
+            # mark stuff for saving
             self._installerUsed = True
             self._installerOptions = dict(dialog.selectedOptions())
 
-            # Return the tree:
-            return tree
+            return new_tree
 
-        # If user requested a manual installation, we update the name (to keep it
-        # in the manual installation dialog) and just notify the installation manager:
+        # if user requested a manual installation, we update the name (to keep it
+        # in the manual installation dialog) and just notify the installation manager
         elif dialog.isManualRequested():
             name.update(dialog.name(), mobase.GuessQuality.USER)
             return mobase.InstallResult.MANUAL_REQUESTED
 
-        # If user canceled, we simply notify the installation manager:
+        # if user canceled, we simply notify the installation manager
         else:
             return mobase.InstallResult.CANCELED
 
-    def tr(self, str) -> str:
-        # We need this to translate string in Python. Check the common documentation
-        # for more details:
-        return QApplication.translate("WizardInstaller", str)
+    def _tr(self, value: str) -> str:
+        # we need this to translate string in Python. Check the common documentation
+        # for more details
+        return QApplication.translate("WizardInstaller", value)
