@@ -1,8 +1,8 @@
-# -*- encoding: utf-8 -*-
+from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Iterable, List, Optional
+from typing import Any, Iterable, List, Optional
 
 from wizard.interpreter import WizardInterpreter
 from wizard.manager import ManagerModInterface
@@ -14,7 +14,6 @@ import mobase
 
 
 class MO2SubPackage(SubPackage):
-
     _tree: mobase.IFileTree
     _files: List[str]
 
@@ -22,12 +21,11 @@ class MO2SubPackage(SubPackage):
         super().__init__(tree.name())
         self._tree = tree
 
-        # We cannot perform lazy iteration on the tree in a Python way so we
-        # have to list the files:
-
+        # we cannot perform lazy iteration on the tree in a Python way so we
+        # have to list the files
         self._files = []
 
-        def fn(folder, entry) -> mobase.IFileTree.WalkReturn:
+        def fn(folder: str, entry: mobase.FileTreeEntry) -> mobase.IFileTree.WalkReturn:
             self._files.append(entry.path())
             return mobase.IFileTree.CONTINUE
 
@@ -39,7 +37,6 @@ class MO2SubPackage(SubPackage):
 
 
 class MO2SeverityContext(SeverityContext):
-
     _organizer: mobase.IOrganizer
 
     def __init__(self, organizer: mobase.IOrganizer):
@@ -51,21 +48,17 @@ class MO2SeverityContext(SeverityContext):
 
 
 class MO2ManagerModInterface(ManagerModInterface):
-
     _organizer: mobase.IOrganizer
     _game: mobase.IPluginGame
     _subpackages: SubPackages
 
     def __init__(self, tree: mobase.IFileTree, organizer: mobase.IOrganizer):
-
         self._organizer = organizer
         self._game = organizer.managedGame()
 
-        checker: mobase.ModDataChecker = self._game.feature(
-            mobase.ModDataChecker  # type: ignore
-        )
+        checker = self._organizer.gameFeatures().gameFeature(mobase.ModDataChecker)
 
-        # Read the subpackages:
+        # read the sub-packages
         self._subpackages = SubPackages()
         for entry in tree:
             if isinstance(entry, mobase.IFileTree):
@@ -74,12 +67,12 @@ class MO2ManagerModInterface(ManagerModInterface):
                         self._subpackages.append(MO2SubPackage(entry))
                         continue
 
-                # Add entry with INI tweaks:
+                # add entry with INI tweaks
                 if entry.exists("INI Tweaks") or entry.exists("INI"):
                     self._subpackages.append(MO2SubPackage(entry))
                     continue
 
-                # We add folder with format "XXX Docs" where "XXX" is a number.
+                # we add folder with format "XXX Docs" where "XXX" is a number
                 parts = entry.name().split()
                 if (
                     len(parts) >= 2
@@ -103,7 +96,7 @@ class MO2ManagerModInterface(ManagerModInterface):
             return 0
 
     def compareSEVersion(self, version: str) -> int:
-        se = self._game.feature(mobase.ScriptExtender)  # type: ignore
+        se = self._organizer.gameFeatures().gameFeature(mobase.ScriptExtender)
         if not se:
             return 1
         v1 = mobase.VersionInfo(version)
@@ -116,11 +109,11 @@ class MO2ManagerModInterface(ManagerModInterface):
             return 0
 
     def compareGEVersion(self, version: str) -> int:
-        # Cannot do th is in MO2.
+        # cannot do th is in MO2
         return 1
 
     def compareWBVersion(self, version: str) -> int:
-        # Cannot do this in MO2.
+        # cannot do this in MO2
         return 1
 
     def _resolve(self, filepath: str) -> Optional[Path]:
@@ -134,8 +127,8 @@ class MO2ManagerModInterface(ManagerModInterface):
             The path to the given file on the disk, or one of the file mapping
             to it in the VFS, or None if the file does not exists.
         """
-        # TODO: This does not handle weird path that go back (..) and
-        # then in data again, e.g. ../data/xxx.esp.
+        # TODO: This does not handle weird path that go back (..) and then in data
+        # again, e.g. ../data/xxx.esp.
         path: Optional[Path]
         if filepath.startswith(".."):
             path = Path(self._game.dataDirectory().absoluteFilePath(filepath))
@@ -161,7 +154,7 @@ class MO2ManagerModInterface(ManagerModInterface):
     def getPluginLoadOrder(self, filename: str, fallback: int = -1) -> int:
         return self._organizer.pluginList().loadOrder(filename)
 
-    def getPluginStatus(self, filename) -> int:
+    def getPluginStatus(self, filename: str) -> int:
         state = self._organizer.pluginList().state(filename)
 
         if state == mobase.PluginState.ACTIVE:
@@ -170,25 +163,24 @@ class MO2ManagerModInterface(ManagerModInterface):
             return 0  # Or 1?
         return -1
 
-    def getFilename(self, filepath: str) -> str:
-        path = self._resolve(filepath)
-        if path:
-            if path.is_file():
-                return path.name
+    def getFilename(self, path: str) -> str:
+        path_ = self._resolve(path)
+        if path_:
+            if path_.is_file():
+                return path_.name
         return ""
 
-    def getFolder(self, filepath: str) -> str:
-        path = self._resolve(filepath)
-        if path:
-            if path.is_dir():
-                return path.name
+    def getFolder(self, path: str) -> str:
+        path_ = self._resolve(path)
+        if path_:
+            if path_.is_dir():
+                return path_.name
         return ""
 
 
 def make_interpreter(
     base: mobase.IFileTree, organizer: mobase.IOrganizer
-) -> WizardInterpreter:
-
+) -> WizardInterpreter[Any]:
     manager = MO2ManagerModInterface(base, organizer)
     severity = MO2SeverityContext(organizer)
 

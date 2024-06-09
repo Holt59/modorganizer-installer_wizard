@@ -1,1 +1,1 @@
-bain-wizard-interpreter==1.0.3
+bain-wizard-interpreter==1.0.4
